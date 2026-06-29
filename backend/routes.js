@@ -1,4 +1,4 @@
-import { pool } from './index.js';
+import { pool, sendMessagesManual } from './index.js';
 
 export function setupRoutes(app) {
   // GET all clients
@@ -55,6 +55,22 @@ export function setupRoutes(app) {
         return res.status(404).json({ error: 'Cliente no encontrado' });
       }
       res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST send messages manually (Day 8 or Day 10)
+  app.post('/api/send-messages', async (req, res) => {
+    const { messageType } = req.body; // 'day8' or 'day10'
+
+    if (!messageType || !['day8', 'day10'].includes(messageType)) {
+      return res.status(400).json({ error: 'messageType debe ser day8 o day10' });
+    }
+
+    try {
+      const result = await sendMessagesManual(messageType);
+      res.json(result);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

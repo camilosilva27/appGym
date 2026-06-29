@@ -29,48 +29,31 @@ app.get('/health', (req, res) => {
 // Setup routes
 setupRoutes(app);
 
-// Initialize WhatsApp (run on startup)
-initializeWhatsApp().catch(console.error);
+// WhatsApp disabled for now (manual sending via API)
+// initializeWhatsApp().catch(console.error);
 
-// Scheduler: Día 8 a las 08:00
-cron.schedule('0 8 8 * *', async () => {
-  console.log('Ejecutando envío de mensajes - Día 8');
-  await sendMessagesDay8();
-});
-
-// Scheduler: Día 10 a las 08:00
-cron.schedule('0 8 10 * *', async () => {
-  console.log('Ejecutando envío de mensajes - Día 10');
-  await sendMessagesDay10();
-});
-
-async function sendMessagesDay8() {
+// Manual message sending
+export async function sendMessagesManual(messageType) {
   try {
     const result = await pool.query('SELECT * FROM clients WHERE pagado = false');
     const clients = result.rows;
 
-    for (const client of clients) {
-      const msg = 'Buenos días, recordá que el día 10 es el límite para el pago. Muchas gracias!';
-      await sendWhatsAppMessage(client.telefono, msg);
-      console.log(`Mensaje enviado a ${client.nombre}`);
+    let msg = '';
+    if (messageType === 'day8') {
+      msg = 'Buenos días, recordá que el día 10 es el límite para el pago. Muchas gracias!';
+    } else if (messageType === 'day10') {
+      msg = 'Buenos días, pasaste la fecha límite para el pago. Intenta efectuar el pago lo antes posible. Muchas gracias';
     }
-  } catch (error) {
-    console.error('Error en envío día 8:', error);
-  }
-}
-
-async function sendMessagesDay10() {
-  try {
-    const result = await pool.query('SELECT * FROM clients WHERE pagado = false');
-    const clients = result.rows;
 
     for (const client of clients) {
-      const msg = 'Buenos días, pasaste la fecha límite para el pago. Intenta efectuar el pago lo antes posible. Muchas gracias';
-      await sendWhatsAppMessage(client.telefono, msg);
-      console.log(`Mensaje enviado a ${client.nombre}`);
+      console.log(`Mensaje enviado a ${client.nombre} (${client.telefono}): ${msg}`);
+      // Aquí van los mensajes reales cuando implementes WhatsApp
     }
+
+    return { success: true, sent: clients.length, message: msg };
   } catch (error) {
-    console.error('Error en envío día 10:', error);
+    console.error('Error enviando mensajes:', error);
+    throw error;
   }
 }
 

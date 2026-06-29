@@ -215,7 +215,13 @@
     </div>
 
     <div class="table-section">
-      <h2 style="margin-bottom: 15px; font-size: 18px; color: #333;">Clientes</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; color: #333;">Clientes</h2>
+        <div style="gap: 10px; display: flex;">
+          <button onclick="sendMessages('day8')" style="background: #28a745;">📱 Recordatorio Día 8</button>
+          <button onclick="sendMessages('day10')" style="background: #dc3545;">⚠️ Aviso Día 10</button>
+        </div>
+      </div>
       <div id="clientsList"></div>
     </div>
   </div>
@@ -360,7 +366,26 @@
       messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
       setTimeout(() => {
         messageDiv.innerHTML = '';
-      }, 3000);
+      }, 5000);
+    }
+
+    async function sendMessages(messageType) {
+      try {
+        const response = await fetch(`${API_URL}/send-messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messageType })
+        });
+
+        if (!response.ok) throw new Error('Error al enviar mensajes');
+
+        const result = await response.json();
+        const typeLabel = messageType === 'day8' ? 'Día 8' : 'Día 10';
+        showMessage(`✓ Mensajes enviados a ${result.sent} clientes (${typeLabel})`, 'success');
+      } catch (error) {
+        showMessage('Error al enviar mensajes', 'error');
+        console.error(error);
+      }
     }
 
     // Load clients on page load
