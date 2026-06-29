@@ -73,7 +73,11 @@ export function setupRoutes(app) {
   app.post('/api/send-messages', async (req, res) => {
     const { messageType } = req.body; // 'day8' or 'day10'
 
+    console.log(`\n📡 ENDPOINT /api/send-messages llamado`);
+    console.log(`   messageType: ${messageType}\n`);
+
     if (!messageType || !['day8', 'day10'].includes(messageType)) {
+      console.log(`   ❌ messageType inválido\n`);
       return res.status(400).json({ error: 'messageType debe ser day8 o day10' });
     }
 
@@ -81,6 +85,7 @@ export function setupRoutes(app) {
       const result = await sendMessagesManual(messageType);
       res.json(result);
     } catch (error) {
+      console.log(`   ❌ Error en endpoint:`, error.message, '\n');
       res.status(500).json({ error: error.message });
     }
   });
