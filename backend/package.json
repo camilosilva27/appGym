@@ -1,0 +1,20 @@
+{
+  "name": "appgym-backend",
+  "version": "1.0.0",
+  "description": "Backend para gestión de clientes de gimnasio",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
+    "baileys": "^6.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.2",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
