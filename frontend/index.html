@@ -222,6 +222,15 @@
           <button onclick="sendMessages('day10')" style="background: #dc3545;">⚠️ Aviso Día 10</button>
         </div>
       </div>
+      <div style="margin-bottom: 15px;">
+        <input
+          type="text"
+          id="searchNombre"
+          placeholder="Buscar por nombre..."
+          oninput="filterClients()"
+          style="width: 100%; max-width: 300px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+        />
+      </div>
       <div id="clientsList"></div>
     </div>
   </div>
@@ -229,15 +238,23 @@
   <script>
     const API_URL = 'http://localhost:3001/api';
 
+    let allClients = [];
+
     async function loadClients() {
       try {
         const response = await fetch(`${API_URL}/clients`);
-        const clients = await response.json();
-        renderClients(clients);
+        allClients = await response.json();
+        renderClients(allClients);
       } catch (error) {
         showMessage('Error cargando clientes', 'error');
         console.error(error);
       }
+    }
+
+    function filterClients() {
+      const query = document.getElementById('searchNombre').value.trim().toLowerCase();
+      const filtered = allClients.filter(c => c.nombre.toLowerCase().includes(query));
+      renderClients(filtered);
     }
 
     function renderClients(clients) {
