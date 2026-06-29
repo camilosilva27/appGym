@@ -1,12 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pkg from 'pg';
+import { createClient } from '@supabase/supabase-js';
 import cron from 'node-cron';
 import { initializeWhatsApp, sendWhatsAppMessage } from './whatsapp.js';
 import { setupRoutes } from './routes.js';
 
-const { Pool } = pkg;
 dotenv.config();
 
 const app = express();
@@ -16,10 +15,11 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// PostgreSQL Pool
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// Supabase client
+export const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -35,8 +35,12 @@ setupRoutes(app);
 // Manual message sending
 export async function sendMessagesManual(messageType) {
   try {
-    const result = await pool.query('SELECT * FROM clients WHERE pagado = false');
-    const clients = result.rows;
+    const { data: clients, error } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('pagado', false);
+
+    if (error) throw error;
 
     let msg = '';
     if (messageType === 'day8') {
