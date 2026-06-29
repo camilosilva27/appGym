@@ -1,11 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import pkg from 'pg';
 import cron from 'node-cron';
 import { initializeWhatsApp, sendWhatsAppMessage } from './whatsapp.js';
 import { setupRoutes } from './routes.js';
 
+const { Pool } = pkg;
 dotenv.config();
 
 const app = express();
@@ -15,11 +16,10 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Supabase client
-export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+// PostgreSQL Pool
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -46,12 +46,8 @@ cron.schedule('0 8 10 * *', async () => {
 
 async function sendMessagesDay8() {
   try {
-    const { data: clients, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('pagado', false);
-
-    if (error) throw error;
+    const result = await pool.query('SELECT * FROM clients WHERE pagado = false');
+    const clients = result.rows;
 
     for (const client of clients) {
       const msg = 'Buenos días, recordá que el día 10 es el límite para el pago. Muchas gracias!';
@@ -65,12 +61,8 @@ async function sendMessagesDay8() {
 
 async function sendMessagesDay10() {
   try {
-    const { data: clients, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('pagado', false);
-
-    if (error) throw error;
+    const result = await pool.query('SELECT * FROM clients WHERE pagado = false');
+    const clients = result.rows;
 
     for (const client of clients) {
       const msg = 'Buenos días, pasaste la fecha límite para el pago. Intenta efectuar el pago lo antes posible. Muchas gracias';

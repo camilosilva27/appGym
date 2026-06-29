@@ -1,5 +1,5 @@
 -- Tabla de clientes para AppGym
--- Ejecutar en Supabase SQL Editor
+-- Ejecutar en Render PostgreSQL
 
 CREATE TABLE clients (
   id BIGSERIAL PRIMARY KEY,
@@ -13,9 +13,3 @@ CREATE TABLE clients (
 -- Índices para búsqueda rápida
 CREATE INDEX idx_clients_pagado ON clients(pagado);
 CREATE INDEX idx_clients_nombre ON clients(nombre);
-
--- RLS (Row Level Security) - Permitir acceso público para desarrollo
-ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Enable all access for development" ON clients
-  FOR ALL USING (true) WITH CHECK (true);

@@ -1,16 +1,11 @@
-import { supabase } from './index.js';
+import { pool } from './index.js';
 
 export function setupRoutes(app) {
   // GET all clients
   app.get('/api/clients', async (req, res) => {
     try {
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*')
-        .order('nombre', { ascending: true });
-
-      if (error) throw error;
-      res.json(data);
+      const result = await pool.query('SELECT * FROM clients ORDER BY nombre ASC');
+      res.json(result.rows);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -21,13 +16,11 @@ export function setupRoutes(app) {
     const { nombre, telefono, pagado } = req.body;
 
     try {
-      const { data, error } = await supabase
-        .from('clients')
-        .insert([{ nombre, telefono, pagado: pagado || false }])
-        .select();
-
-      if (error) throw error;
-      res.status(201).json(data[0]);
+      const result = await pool.query(
+        'INSERT INTO clients (nombre, telefono, pagado) VALUES ($1, $2, $3) RETURNING *',
+        [nombre, telefono, pagado || false]
+      );
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -39,14 +32,14 @@ export function setupRoutes(app) {
     const { nombre, telefono, pagado } = req.body;
 
     try {
-      const { data, error } = await supabase
-        .from('clients')
-        .update({ nombre, telefono, pagado, updated_at: new Date() })
-        .eq('id', id)
-        .select();
-
-      if (error) throw error;
-      res.json(data[0]);
+      const result = await pool.query(
+        'UPDATE clients SET nombre = $1, telefono = $2, pagado = $3, updated_at = NOW() WHERE id = $4 RETURNING *',
+        [nombre, telefono, pagado, id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Cliente no encontrado' });
+      }
+      res.json(result.rows[0]);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -57,12 +50,10 @@ export function setupRoutes(app) {
     const { id } = req.params;
 
     try {
-      const { error } = await supabase
-        .from('clients')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const result = await pool.query('DELETE FROM clients WHERE id = $1', [id]);
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Cliente no encontrado' });
+      }
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: error.message });

@@ -39,35 +39,20 @@ cp .env.example .env
 
 ```
 PORT=3001
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-anon-key
-WHATSAPP_PHONE_NUMBER=+54xxxxxxx
+DATABASE_URL=postgresql://user:password@localhost:5432/appgym
 WHATSAPP_SESSION_NAME=appgym-session
 ```
 
-**Cómo obtener credenciales de Supabase:**
-1. Ir a https://supabase.com
-2. Crear proyecto nuevo
-3. En Settings > API, copiar URL y anon key
-4. Crear tabla `clients` con estas columnas:
-   - `id` (bigint, PK)
-   - `nombre` (text)
-   - `telefono` (text)
-   - `pagado` (boolean, default false)
-   - `created_at` (timestamp)
-   - `updated_at` (timestamp)
+**Para desarrollo local:**
+1. Instala PostgreSQL localmente
+2. Crea base de datos: `createdb appgym`
+3. Ejecuta `docs/schema.sql` en tu PostgreSQL
+4. Actualiza DATABASE_URL en `.env`
 
-SQL para crear tabla:
-```sql
-CREATE TABLE clients (
-  id BIGSERIAL PRIMARY KEY,
-  nombre TEXT NOT NULL,
-  telefono TEXT NOT NULL,
-  pagado BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+**Para producción (Render):**
+1. En Render, crea PostgreSQL
+2. Copia la "Internal Database URL"
+3. Pega en `DATABASE_URL` en variables de entorno
 
 ### 4. Inicializar WhatsApp
 
@@ -85,27 +70,23 @@ Abre `frontend/index.html` en el navegador (o usa live server).
 
 ## Deployment
 
+### Backend - Render (Gratis)
+
+1. Ve a https://render.com
+2. Crea **PostgreSQL** (Plan: Free)
+   - Copia "Internal Database URL"
+3. Crea **Web Service** desde tu repo GitHub
+   - Build: `npm install`
+   - Start: `node index.js`
+   - Agrega variable: `DATABASE_URL` = URL de PostgreSQL
+4. Deploy automático
+
+**La tabla se crea automáticamente en el primer inicio** (o ejecuta `docs/schema.sql` en Render DB).
+
 ### Frontend - Vercel (Gratis)
 
-```bash
-cd frontend
-# Copia el contenido de index.html
-# Ve a https://vercel.com > New Project > HTML
-# Pega el código
-```
-
-O arrastra el archivo `index.html` a Vercel.
-
-### Backend - Railway (Gratis + $5/mes)
-
-1. Ir a https://railway.app
-2. Conectar repo GitHub
-3. Crear PostgreSQL en Railway
-4. Crear Node.js app
-5. Agregar variables de entorno
-6. Deploy automático
-
-**Alternativa**: Render.com (también gratis)
+1. Despliega `frontend/index.html` en Vercel
+2. Actualiza `API_URL` en `index.html` con la URL del backend en Render
 
 ## Uso
 
