@@ -368,9 +368,9 @@
           : '<span class="status-badge status-unpaid">✗ No pagado</span>';
 
         html += `
-          <tr>
-            <td>${client.nombre}</td>
-            <td>${client.telefono}</td>
+          <tr id="row-${client.id}">
+            <td id="nombre-${client.id}">${client.nombre}</td>
+            <td id="telefono-${client.id}">${client.telefono}</td>
             <td>${statusBadge}</td>
             <td class="checkbox-cell">
               <input
@@ -379,7 +379,8 @@
                 onchange="togglePayment(${client.id}, this.checked)"
               />
             </td>
-            <td class="actions-cell">
+            <td class="actions-cell" style="display:flex; gap:6px; justify-content:center;">
+              <button style="background:#ffc107; color:#333; padding:6px 12px; font-size:12px;" onclick="startEdit(${client.id}, '${client.nombre.replace(/'/g, "\\'")}', '${client.telefono}')">Editar</button>
               <button class="delete" onclick="deleteClient(${client.id})">Eliminar</button>
             </td>
           </tr>
@@ -422,6 +423,39 @@
       } catch (error) {
         showMessage('Error al agregar cliente', 'error');
         console.error(error);
+      }
+    }
+
+    function startEdit(id, nombre, telefono) {
+      document.getElementById(`nombre-${id}`).innerHTML = `<input type="text" value="${nombre}" id="edit-nombre-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;">`;
+      document.getElementById(`telefono-${id}`).innerHTML = `<input type="tel" value="${telefono}" id="edit-telefono-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;">`;
+      const actions = document.querySelector(`#row-${id} .actions-cell`);
+      actions.innerHTML = `
+        <button style="background:#28a745; padding:6px 12px; font-size:12px;" onclick="saveEdit(${id})">Guardar</button>
+        <button style="background:#6c757d; padding:6px 12px; font-size:12px;" onclick="loadClients()">Cancelar</button>
+      `;
+    }
+
+    async function saveEdit(id) {
+      const nombre = document.getElementById(`edit-nombre-${id}`).value.trim();
+      const telefono = document.getElementById(`edit-telefono-${id}`).value.trim();
+
+      if (!nombre || !telefono) {
+        showMessage('Nombre y teléfono son requeridos', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/clients/${id}`, {
+          method: 'PUT',
+          headers: authHeaders(),
+          body: JSON.stringify({ nombre, telefono })
+        });
+        if (!response.ok) throw new Error('Error al actualizar');
+        showMessage('Cliente actualizado', 'success');
+        loadClients();
+      } catch (error) {
+        showMessage('Error al actualizar cliente', 'error');
       }
     }
 
