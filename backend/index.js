@@ -24,18 +24,12 @@ app.get('/health', (req, res) => {
 
 setupRoutes(app);
 
-// Format: 1123456789 -> 541123456789 (WhatsApp Cloud API expects no '+')
+// Formats Argentine phone numbers to WhatsApp Cloud API format (no '+')
+// Example: 1123456789 -> 541123456789
 function formatPhoneNumber(phone) {
   let cleaned = phone.replace(/\D/g, '');
-
-  if (cleaned.startsWith('9')) {
-    cleaned = cleaned.substring(1);
-  }
-
-  if (!cleaned.startsWith('54')) {
-    cleaned = '54' + cleaned;
-  }
-
+  if (cleaned.startsWith('9')) cleaned = cleaned.substring(1);
+  if (!cleaned.startsWith('54')) cleaned = '54' + cleaned;
   return cleaned;
 }
 
@@ -51,17 +45,16 @@ export async function sendMessagesManual(messageType) {
 
   console.log(`📋 Clientes no pagados: ${clients.length}`);
 
-  // const templateName =
-  //   messageType === 'day8'
-  //     ? process.env.WHATSAPP_TEMPLATE_DAY8
-  //     : process.env.WHATSAPP_TEMPLATE_DAY10;
+  // TODO: switch to real templates once approved in Meta Business Manager
+  // const templateName = messageType === 'day8'
+  //   ? process.env.WHATSAPP_TEMPLATE_DAY8
+  //   : process.env.WHATSAPP_TEMPLATE_DAY10;
   const templateName = 'hello_world';
 
   let sent = 0;
   for (const client of clients) {
     const phone = formatPhoneNumber(client.telefono);
     console.log(`\n👤 ${client.nombre} → ${phone}`);
-
     try {
       const clientParam = templateName === 'hello_world' ? null : client.nombre;
       await sendTemplateMessage(phone, templateName, clientParam);
@@ -76,7 +69,7 @@ export async function sendMessagesManual(messageType) {
   return { success: true, sent, total: clients.length };
 }
 
-// Cron endpoints — llamados por Vercel Cron (vercel.json)
+// Cron endpoints — triggered by Vercel Cron (see vercel.json)
 app.post('/api/cron/day8', (req, res) => {
   console.log('⏰ CRON: Envío automático día 8');
   sendMessagesManual('day8').catch(console.error);

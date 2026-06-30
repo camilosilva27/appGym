@@ -1,139 +1,92 @@
-# AppGym - Gestor de Clientes de Gimnasio
+# AppGym
 
-App simple para gestionar clientes de un gimnasio, registrar pagos y enviar recordatorios por WhatsApp automáticamente.
+Sistema de gestión de clientes para gimnasios con recordatorios automáticos por WhatsApp.
 
-## Características
+## Stack
 
-- ✅ ABM (Alta, Baja, Modificación) de clientes
-- ✅ Registro de estado de pago (pagado/no pagado)
-- ✅ Mensajes automáticos WhatsApp:
-  - Día 8: Recordatorio de pago
-  - Día 10: Aviso de atraso
-- ✅ Sin depender de servicios de IA
-
-## Stack Tecnológico
-
-- **Frontend**: HTML + CSS + Vanilla JS (sin dependencias)
-- **Backend**: Node.js + Express
-- **Base de datos**: Supabase (PostgreSQL gratuito)
-- **WhatsApp**: Baileys (automatización, gratis)
-- **Scheduler**: node-cron (ejecuta tareas automáticamente)
-
-## Setup Local
-
-### 1. Requisitos Previos
-
-- Node.js 18+ instalado
-- Cuenta en Supabase (gratis)
-- Cuenta de WhatsApp
-
-### 2. Clonar y configurar backend
-
-```bash
-cd appGym/backend
-npm install
-cp .env.example .env
-```
-
-### 3. Configurar variables de entorno (`.env`)
-
-```
-PORT=3001
-DATABASE_URL=postgresql://user:password@localhost:5432/appgym
-WHATSAPP_SESSION_NAME=appgym-session
-```
-
-**Para desarrollo local:**
-1. Instala PostgreSQL localmente
-2. Crea base de datos: `createdb appgym`
-3. Ejecuta `docs/schema.sql` en tu PostgreSQL
-4. Actualiza DATABASE_URL en `.env`
-
-**Para producción (Render):**
-1. En Render, crea PostgreSQL
-2. Copia la "Internal Database URL"
-3. Pega en `DATABASE_URL` en variables de entorno
-
-### 4. Inicializar WhatsApp
-
-Cuando inicies el backend por primera vez, Baileys genera un QR en la terminal. Escanealo con WhatsApp (Linked Devices).
-
-### 5. Iniciar backend
-
-```bash
-npm run dev
-```
-
-### 6. Abrir frontend
-
-Abre `frontend/index.html` en el navegador (o usa live server).
-
-## Deployment
-
-### Backend - Render (Gratis)
-
-1. Ve a https://render.com
-2. Crea **PostgreSQL** (Plan: Free)
-   - Copia "Internal Database URL"
-3. Crea **Web Service** desde tu repo GitHub
-   - Build: `npm install`
-   - Start: `node index.js`
-   - Agrega variable: `DATABASE_URL` = URL de PostgreSQL
-4. Deploy automático
-
-**La tabla se crea automáticamente en el primer inicio** (o ejecuta `docs/schema.sql` en Render DB).
-
-### Frontend - Vercel (Gratis)
-
-1. Despliega `frontend/index.html` en Vercel
-2. Actualiza `API_URL` en `index.html` con la URL del backend en Render
-
-## Uso
-
-1. **Agregar clientes**: Nombre + Teléfono + Marcar "Pagado" si corresponde
-2. **Marcar pagos**: Click el checkbox "Pagado" en la tabla
-3. **Eliminar**: Click botón rojo
-4. **Mensajes automáticos**: El backend envía automáticamente días 8 y 10
+- **Frontend**: HTML/CSS/JS estático — Vercel
+- **Backend**: Node.js + Express — Vercel (serverless)
+- **Base de datos**: Supabase (PostgreSQL)
+- **WhatsApp**: Meta WhatsApp Cloud API
+- **Autenticación**: JWT + bcrypt
 
 ## Estructura
 
 ```
 appGym/
-├── frontend/
-│   └── index.html          # UI completa (HTML + CSS + JS)
 ├── backend/
-│   ├── package.json
-│   ├── .env.example
-│   ├── index.js            # Servidor + schedulers
-│   ├── routes.js           # Endpoints CRUD
-│   └── whatsapp.js         # Conexión Baileys
-├── docs/
-│   └── schema.sql          # SQL tabla
-└── README.md
+│   ├── index.js          # Entry point, lógica de envío, cron endpoints
+│   ├── routes.js         # Rutas API (clientes, login, envío manual)
+│   ├── auth.js           # Middleware JWT
+│   ├── whatsapp-cloud.js # Integración Meta WhatsApp Cloud API
+│   ├── vercel.json       # Config Vercel: rutas + cron jobs
+│   └── .env.example      # Variables de entorno requeridas
+└── docs/
+    └── index.html        # Frontend completo
 ```
 
-## Troubleshooting
+## Variables de entorno
 
-**"Error de CORS"**
-- El backend corre en `:3001`, el frontend en `:3000` (o archivo local)
-- CORS ya está habilitado en `index.js`
+Copiar `backend/.env.example` a `backend/.env` y completar:
 
-**"No conecta WhatsApp"**
-- Asegúrate de scanear el QR en terminal al iniciar
-- Usa la misma cuenta de WhatsApp donde vas a enviar mensajes
+```
+PORT=3001
+JWT_SECRET=
+SUPABASE_URL=
+SUPABASE_KEY=
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
+WHATSAPP_TEMPLATE_DAY8=
+WHATSAPP_TEMPLATE_DAY10=
+```
 
-**"Mensajes no se envían automáticamente"**
-- Verifica que backend esté corriendo
-- Checkea logs en terminal
-- Asegúrate que Supabase está actualizado
+## Setup local
 
-## Notas
+```bash
+cd backend
+npm install
+cp .env.example .env
+# completar .env
+npm run dev
+```
 
-- Los mensajes se envían automáticamente **si el backend está corriendo**
-- Para producción, despliega el backend en un servidor (Railway, Render, etc.)
-- No necesitas Claude después del deployment; todo funciona independientemente
-- Los números de teléfono deben estar en formato: `+54XXXXXXXXXX`
+Abrir `docs/index.html` en el browser.
 
-## Licencia
+## Deployment
 
-Libre de usar. Made with ❤️
+- **Backend**: Vercel — importar repo, Root Directory: `backend`
+- **Frontend**: Vercel — importar repo, Root Directory: `docs`
+- Cargar variables de entorno en cada proyecto de Vercel
+
+## Cron jobs
+
+Configurados en `backend/vercel.json`, se ejecutan automáticamente:
+- **Día 8** a las 9:00 AM (Argentina) — recordatorio de vencimiento próximo
+- **Día 10** a las 9:00 AM (Argentina) — aviso de pago vencido
+
+Solo envían a clientes con `pagado = false`.
+
+## Base de datos (Supabase)
+
+Tablas requeridas:
+
+```sql
+create table clients (
+  id bigint primary key generated always as identity,
+  nombre text not null,
+  telefono text not null,
+  pagado boolean default false,
+  updated_at timestamptz
+);
+
+create table users (
+  id uuid primary key default gen_random_uuid(),
+  username text unique not null,
+  password_hash text not null,
+  gym_nombre text not null
+);
+```
+
+## Pendiente
+
+- Activar templates reales en `backend/index.js` (ver comentario TODO) cuando sean aprobados en Meta Business Manager

@@ -1,11 +1,10 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { supabase, sendMessagesManual } from './index.js';
-import { sendTemplateMessage } from './whatsapp-cloud.js';
 import { verifyToken } from './auth.js';
 
 export function setupRoutes(app) {
-  // POST login (no requiere auth)
+  // POST login (no auth required)
   app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password)
@@ -31,8 +30,9 @@ export function setupRoutes(app) {
     res.json({ token, gym: user.gym_nombre });
   });
 
-  // Todas las rutas siguientes requieren token
+  // All routes below require a valid JWT
   app.use('/api', verifyToken);
+
   // GET all clients
   app.get('/api/clients', async (req, res) => {
     try {
@@ -101,32 +101,11 @@ export function setupRoutes(app) {
     }
   });
 
-  // POST test WhatsApp with hello_world template
-  app.post('/api/test-whatsapp', async (req, res) => {
-    const { telefono } = req.body;
-
-    if (!telefono) {
-      return res.status(400).json({ error: 'telefono es requerido' });
-    }
-
-    try {
-      const phone = telefono.replace(/\D/g, '');
-      const result = await sendTemplateMessage(phone, 'hello_world');
-      res.json({ success: true, result });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // POST send messages manually (Day 8 or Day 10)
+  // POST send messages manually
   app.post('/api/send-messages', async (req, res) => {
-    const { messageType } = req.body; // 'day8' or 'day10'
-
-    console.log(`\n📡 ENDPOINT /api/send-messages llamado`);
-    console.log(`   messageType: ${messageType}\n`);
+    const { messageType } = req.body;
 
     if (!messageType || !['day8', 'day10'].includes(messageType)) {
-      console.log(`   ❌ messageType inválido\n`);
       return res.status(400).json({ error: 'messageType debe ser day8 o day10' });
     }
 
@@ -134,7 +113,6 @@ export function setupRoutes(app) {
       const result = await sendMessagesManual(messageType);
       res.json(result);
     } catch (error) {
-      console.log(`   ❌ Error en endpoint:`, error.message, '\n');
       res.status(500).json({ error: error.message });
     }
   });
