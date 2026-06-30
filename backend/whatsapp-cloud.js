@@ -10,23 +10,24 @@ function getHeaders() {
   };
 }
 
-export async function sendTemplateMessage(phoneNumber, templateName, clientName) {
+export async function sendTemplateMessage(phoneNumber, templateName, clientName = null) {
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+  const TEMPLATE_LANG = templateName === 'hello_world' ? 'en_US' : 'es';
+
+  const template = {
+    name: templateName,
+    language: { code: TEMPLATE_LANG },
+    ...(clientName && {
+      components: [{ type: 'body', parameters: [{ type: 'text', text: clientName }] }],
+    }),
+  };
 
   const body = {
     messaging_product: 'whatsapp',
     to: phoneNumber,
     type: 'template',
-    template: {
-      name: templateName,
-      language: { code: 'es' },
-      components: [
-        {
-          type: 'body',
-          parameters: [{ type: 'text', text: clientName }],
-        },
-      ],
-    },
+    template,
   };
 
   const res = await fetch(`${GRAPH_API_URL}/${phoneNumberId}/messages`, {

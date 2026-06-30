@@ -1,6 +1,38 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { supabase, sendMessagesManual } from './index.js';
+import { sendTemplateMessage } from './whatsapp-cloud.js';
+import { verifyToken } from './auth.js';
 
 export function setupRoutes(app) {
+  // POST login (no requiere auth)
+  app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password)
+      return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+
+    const { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+    const token = jwt.sign(
+      { id: user.id, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({ token, gym: user.gym_nombre });
+  });
+
+  // Todas las rutas siguientes requieren token
+  app.use('/api', verifyToken);
   // GET all clients
   app.get('/api/clients', async (req, res) => {
     try {
@@ -64,6 +96,23 @@ export function setupRoutes(app) {
 
       if (error) throw error;
       res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // POST test WhatsApp with hello_world template
+  app.post('/api/test-whatsapp', async (req, res) => {
+    const { telefono } = req.body;
+
+    if (!telefono) {
+      return res.status(400).json({ error: 'telefono es requerido' });
+    }
+
+    try {
+      const phone = telefono.replace(/\D/g, '');
+      const result = await sendTemplateMessage(phone, 'hello_world');
+      res.json({ success: true, result });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

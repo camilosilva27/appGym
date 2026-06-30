@@ -188,8 +188,26 @@
   </style>
 </head>
 <body>
+  <!-- Login -->
+  <div id="loginScreen" style="display:none; max-width:360px; margin:80px auto;">
+    <div style="background:white; padding:40px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <h1 style="text-align:center; margin-bottom:30px; font-size:22px;">🏋️ AppGym</h1>
+      <div id="loginError"></div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <input type="text" id="loginUsername" placeholder="Usuario" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;" />
+        <input type="password" id="loginPassword" placeholder="Contraseña" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;" onkeydown="if(event.key==='Enter') login()" />
+        <button onclick="login()" style="padding:12px;">Ingresar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="appScreen" style="display:none;">
   <div class="container">
-    <h1>🏋️ AppGym - Gestión de Clientes</h1>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+      <h1 style="margin:0;">🏋️ <span id="gymNombre">AppGym</span></h1>
+      <button onclick="logout()" style="background:#6c757d; padding:8px 16px; font-size:13px;">Salir</button>
+    </div>
 
     <div id="message"></div>
 
@@ -234,15 +252,80 @@
       <div id="clientsList"></div>
     </div>
   </div>
+  </div><!-- /appScreen -->
 
   <script>
     const API_URL = 'http://localhost:3001/api';
 
     let allClients = [];
 
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      };
+    }
+
+    function checkAuth() {
+      const token = getToken();
+      if (token) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('appScreen').style.display = 'block';
+        const gym = localStorage.getItem('gym');
+        if (gym) document.getElementById('gymNombre').textContent = gym;
+        loadClients();
+      } else {
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('appScreen').style.display = 'none';
+      }
+    }
+
+    async function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+
+      try {
+        const res = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('gym', data.gym);
+        errorDiv.innerHTML = '';
+        checkAuth();
+      } catch (err) {
+        errorDiv.innerHTML = `<div class="error">${err.message}</div>`;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('gym');
+      checkAuth();
+    }
+
+    function handleUnauthorized(res) {
+      if (res.status === 401) {
+        logout();
+        return true;
+      }
+      return false;
+    }
+
     async function loadClients() {
       try {
-        const response = await fetch(`${API_URL}/clients`);
+        const response = await fetch(`${API_URL}/clients`, { headers: authHeaders() });
+        if (handleUnauthorized(response)) return;
         allClients = await response.json();
         renderClients(allClients);
       } catch (error) {
@@ -324,7 +407,7 @@
       try {
         const response = await fetch(`${API_URL}/clients`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ nombre, telefono, pagado })
         });
 
@@ -346,7 +429,7 @@
       try {
         const response = await fetch(`${API_URL}/clients/${clientId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ pagado: paid })
         });
 
@@ -365,7 +448,8 @@
 
       try {
         const response = await fetch(`${API_URL}/clients/${clientId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: authHeaders()
         });
 
         if (!response.ok) throw new Error('Error al eliminar');
@@ -390,7 +474,7 @@
       try {
         const response = await fetch(`${API_URL}/send-messages`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders(),
           body: JSON.stringify({ messageType })
         });
 
@@ -405,8 +489,7 @@
       }
     }
 
-    // Load clients on page load
-    loadClients();
+    checkAuth();
   </script>
 </body>
 </html>

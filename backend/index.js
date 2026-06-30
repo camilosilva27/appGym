@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
-import cron from 'node-cron';
 import { sendTemplateMessage } from './whatsapp-cloud.js';
 import { setupRoutes } from './routes.js';
 
@@ -52,10 +51,11 @@ export async function sendMessagesManual(messageType) {
 
   console.log(`📋 Clientes no pagados: ${clients.length}`);
 
-  const templateName =
-    messageType === 'day8'
-      ? process.env.WHATSAPP_TEMPLATE_DAY8
-      : process.env.WHATSAPP_TEMPLATE_DAY10;
+  // const templateName =
+  //   messageType === 'day8'
+  //     ? process.env.WHATSAPP_TEMPLATE_DAY8
+  //     : process.env.WHATSAPP_TEMPLATE_DAY10;
+  const templateName = 'hello_world';
 
   let sent = 0;
   for (const client of clients) {
@@ -63,7 +63,8 @@ export async function sendMessagesManual(messageType) {
     console.log(`\n👤 ${client.nombre} → ${phone}`);
 
     try {
-      await sendTemplateMessage(phone, templateName, client.nombre);
+      const clientParam = templateName === 'hello_world' ? null : client.nombre;
+      await sendTemplateMessage(phone, templateName, clientParam);
       sent++;
       console.log(`   ✅ Enviado`);
     } catch (err) {
@@ -75,17 +76,20 @@ export async function sendMessagesManual(messageType) {
   return { success: true, sent, total: clients.length };
 }
 
-// Día 8 de cada mes — aviso previo al vencimiento
-cron.schedule('0 9 8 * *', () => {
+// Cron endpoints — llamados por Vercel Cron (vercel.json)
+app.post('/api/cron/day8', (req, res) => {
   console.log('⏰ CRON: Envío automático día 8');
   sendMessagesManual('day8').catch(console.error);
-}, { timezone: 'America/Argentina/Buenos_Aires' });
+  res.json({ ok: true });
+});
 
-// Día 10 de cada mes — aviso de vencimiento
-cron.schedule('0 9 10 * *', () => {
+app.post('/api/cron/day10', (req, res) => {
   console.log('⏰ CRON: Envío automático día 10');
   sendMessagesManual('day10').catch(console.error);
-}, { timezone: 'America/Argentina/Buenos_Aires' });
+  res.json({ ok: true });
+});
+
+export default app;
 
 const server = app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
