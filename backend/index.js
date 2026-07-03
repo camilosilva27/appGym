@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
-import { sendTemplateMessage } from './whatsapp-cloud.js';
+import { sendTextMessage } from './whatsapp-waha.js';
 import { setupRoutes } from './routes.js';
 
 dotenv.config();
@@ -45,19 +45,18 @@ export async function sendMessagesManual(messageType) {
 
   console.log(`📋 Clientes no pagados: ${clients.length}`);
 
-  // TODO: switch to real templates once approved in Meta Business Manager
-  // const templateName = messageType === 'day8'
-  //   ? process.env.WHATSAPP_TEMPLATE_DAY8
-  //   : process.env.WHATSAPP_TEMPLATE_DAY10;
-  const templateName = 'hello_world';
+  const messages = {
+    day8: (nombre) => `Hola ${nombre}! 👋 Te recordamos que el pago de este mes aún no fue registrado. Podés acercarte al gimnasio cuando quieras. Gracias!`,
+    day10: (nombre) => `Hola ${nombre}! 👋 Ya son los 10 del mes y todavía no registramos tu pago. Cualquier consulta, estamos a tu disposición. Gracias!`,
+  };
 
   let sent = 0;
   for (const client of clients) {
     const phone = formatPhoneNumber(client.telefono);
     console.log(`\n👤 ${client.nombre} → ${phone}`);
     try {
-      const clientParam = templateName === 'hello_world' ? null : client.nombre;
-      await sendTemplateMessage(phone, templateName, clientParam);
+      const text = messages[messageType](client.nombre);
+      await sendTextMessage(phone, text);
       sent++;
       console.log(`   ✅ Enviado`);
     } catch (err) {
