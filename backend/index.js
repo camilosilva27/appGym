@@ -30,6 +30,7 @@ function formatPhoneNumber(phone) {
   let cleaned = phone.replace(/\D/g, '');
   if (cleaned.startsWith('549')) return cleaned;
   if (cleaned.startsWith('54')) return '549' + cleaned.substring(2);
+  if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
   if (cleaned.startsWith('9')) return '54' + cleaned;
   return '549' + cleaned;
 }
