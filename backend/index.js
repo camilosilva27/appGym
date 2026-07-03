@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
-import { sendTextMessage } from './whatsapp-waha.js';
+import { sendTextMessage, checkSession } from './whatsapp-waha.js';
 import { setupRoutes } from './routes.js';
 
 dotenv.config();
@@ -37,6 +37,8 @@ function formatPhoneNumber(phone) {
 
 export async function sendMessagesManual(messageType) {
   console.log(`\n🚀 INICIANDO ENVÍO - Tipo: ${messageType}\n`);
+
+  await checkSession();
 
   const { data: clients, error } = await supabase
     .from('clients')

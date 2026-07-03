@@ -24,6 +24,15 @@ async function doSend(phone, text) {
   return res.json();
 }
 
+export async function checkSession() {
+  const res = await fetch(`${WAHA_URL}/api/sessions/${WAHA_SESSION}`, {
+    headers: { 'X-Api-Key': WAHA_API_KEY },
+  });
+  if (!res.ok) throw new Error(`WAHA session check failed: ${res.status}`);
+  const data = await res.json();
+  if (data.status !== 'WORKING') throw new Error(`WAHA session not ready: ${data.status}`);
+}
+
 export async function sendTextMessage(phone, text) {
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   let lastErr;
