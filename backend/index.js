@@ -24,13 +24,14 @@ app.get('/health', (req, res) => {
 
 setupRoutes(app);
 
-// Formats Argentine phone numbers to WhatsApp Cloud API format (no '+')
-// Example: 1123456789 -> 541123456789
+// Formats Argentine phone numbers to WhatsApp format: 549XXXXXXXXXX (13 digits)
+// Works regardless of how the number was stored (with/without country code or '9')
 function formatPhoneNumber(phone) {
   let cleaned = phone.replace(/\D/g, '');
-  if (cleaned.startsWith('9')) cleaned = cleaned.substring(1);
-  if (!cleaned.startsWith('54')) cleaned = '54' + cleaned;
-  return cleaned;
+  if (cleaned.startsWith('549')) return cleaned;
+  if (cleaned.startsWith('54')) return '549' + cleaned.substring(2);
+  if (cleaned.startsWith('9')) return '54' + cleaned;
+  return '549' + cleaned;
 }
 
 export async function sendMessagesManual(messageType) {
