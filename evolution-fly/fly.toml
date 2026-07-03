@@ -7,6 +7,8 @@ primary_region = "gru"
   WHATSAPP_API_PORT = "3000"
   WHATSAPP_API_KEY = "appgym202612345"
   WHATSAPP_DEFAULT_ENGINE = "NOWEB"
+  WAHA_DASHBOARD_USERNAME = "admin"
+  WAHA_DASHBOARD_PASSWORD = "appgym2026"
 
 [http_service]
   internal_port = 3000
@@ -22,4 +24,4 @@ primary_region = "gru"
 
 [[mounts]]
   source = "evolution_data"
-  destination = "/evolution/instances"
+  destination = "/app/.sessions"
