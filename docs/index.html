@@ -240,6 +240,7 @@
           <button onclick="sendMessages('day10')" style="background: #dc3545;">⚠️ Aviso Día 10</button>
         </div>
       </div>
+      <div id="sendLog" style="display:none; margin-bottom: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-size: 13px; max-height: 220px; overflow-y: auto;"></div>
       <div style="margin-bottom: 15px;">
         <input
           type="text"
@@ -505,6 +506,9 @@
     }
 
     async function sendMessages(messageType) {
+      const logEl = document.getElementById('sendLog');
+      logEl.style.display = 'none';
+      logEl.innerHTML = '';
       try {
         const response = await fetch(`${API_URL}/send-messages`, {
           method: 'POST',
@@ -516,7 +520,17 @@
 
         const result = await response.json();
         const typeLabel = messageType === 'day8' ? 'Día 8' : 'Día 10';
-        showMessage(`✓ Mensajes enviados a ${result.sent} clientes (${typeLabel})`, 'success');
+        showMessage(`✓ Mensajes enviados a ${result.sent}/${result.total} clientes (${typeLabel})`, 'success');
+
+        if (result.results && result.results.length > 0) {
+          logEl.innerHTML = result.results.map(r =>
+            `<div style="padding: 3px 0; border-bottom: 1px solid #eee;">
+              ${r.ok ? '✅' : '❌'} <strong>${r.nombre}</strong> → <code>${r.phone}</code>
+              ${r.error ? `<span style="color:#dc3545; font-size:11px;"> ${r.error}</span>` : ''}
+            </div>`
+          ).join('');
+          logEl.style.display = 'block';
+        }
       } catch (error) {
         showMessage('Error al enviar mensajes', 'error');
         console.error(error);

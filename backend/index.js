@@ -53,6 +53,7 @@ export async function sendMessagesManual(messageType) {
   };
 
   let sent = 0;
+  const results = [];
   for (const client of clients) {
     const phone = formatPhoneNumber(client.telefono);
     console.log(`\n👤 ${client.nombre} → ${phone}`);
@@ -61,13 +62,15 @@ export async function sendMessagesManual(messageType) {
       await sendTextMessage(phone, text);
       sent++;
       console.log(`   ✅ Enviado`);
+      results.push({ nombre: client.nombre, phone, ok: true });
     } catch (err) {
       console.error(`   ❌ Error: ${err.message}`);
+      results.push({ nombre: client.nombre, phone, ok: false, error: err.message });
     }
   }
 
   console.log(`\n✅ RESUMEN: ${sent}/${clients.length} mensajes enviados\n`);
-  return { success: true, sent, total: clients.length };
+  return { success: true, sent, total: clients.length, results };
 }
 
 // Cron endpoints — triggered by Vercel Cron (see vercel.json)
