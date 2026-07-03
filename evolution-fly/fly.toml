@@ -1,0 +1,25 @@
+app = "appgym-whatsapp-service"
+primary_region = "gru"
+
+[build]
+
+[env]
+  WHATSAPP_API_PORT = "3000"
+  WHATSAPP_API_KEY = "appgym202612345"
+  WHATSAPP_DEFAULT_ENGINE = "NOWEB"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[mounts]]
+  source = "evolution_data"
+  destination = "/evolution/instances"
