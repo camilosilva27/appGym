@@ -52,6 +52,8 @@ export async function sendMessagesManual(messageType) {
     day10: (nombre) => `Hola ${nombre}! 👋 Ya son los 10 del mes y todavía no registramos tu pago. Cualquier consulta, estamos a tu disposición. Gracias!`,
   };
 
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   let sent = 0;
   const results = [];
   for (const client of clients) {
@@ -67,6 +69,7 @@ export async function sendMessagesManual(messageType) {
       console.error(`   ❌ Error: ${err.message}`);
       results.push({ nombre: client.nombre, phone, ok: false, error: err.message });
     }
+    await delay(1500);
   }
 
   console.log(`\n✅ RESUMEN: ${sent}/${clients.length} mensajes enviados\n`);
