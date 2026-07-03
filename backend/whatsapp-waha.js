@@ -4,7 +4,7 @@ const WAHA_URL = process.env.WAHA_URL;
 const WAHA_API_KEY = process.env.WAHA_API_KEY;
 const WAHA_SESSION = process.env.WAHA_SESSION || 'gymbot';
 
-export async function sendTextMessage(phone, text) {
+async function doSend(phone, text) {
   const chatId = `${phone}@c.us`;
 
   const res = await fetch(`${WAHA_URL}/api/sendText`, {
@@ -13,11 +13,7 @@ export async function sendTextMessage(phone, text) {
       'Content-Type': 'application/json',
       'X-Api-Key': WAHA_API_KEY,
     },
-    body: JSON.stringify({
-      session: WAHA_SESSION,
-      chatId,
-      text,
-    }),
+    body: JSON.stringify({ session: WAHA_SESSION, chatId, text }),
   });
 
   if (!res.ok) {
@@ -26,4 +22,18 @@ export async function sendTextMessage(phone, text) {
   }
 
   return res.json();
+}
+
+export async function sendTextMessage(phone, text) {
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  let lastErr;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      return await doSend(phone, text);
+    } catch (err) {
+      lastErr = err;
+      if (attempt < 3) await delay(3000);
+    }
+  }
+  throw lastErr;
 }
