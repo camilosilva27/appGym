@@ -2,6 +2,7 @@
   "builds": [{ "src": "index.js", "use": "@vercel/node" }],
   "routes": [{ "src": "/(.*)", "dest": "index.js" }],
   "crons": [
+    { "path": "/api/cron/monthly-reset", "schedule": "0 12 1 * *" },
     { "path": "/api/cron/day8", "schedule": "0 12 8 * *" },
     { "path": "/api/cron/day10", "schedule": "0 12 10 * *" },
     { "path": "/api/cron/keepalive", "schedule": "0 10 * * 1,4" }

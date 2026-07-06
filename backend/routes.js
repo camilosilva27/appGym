@@ -52,6 +52,9 @@ export function setupRoutes(app) {
   app.post('/api/clients', async (req, res) => {
     const { nombre, telefono, pagado } = req.body;
 
+    if (!/^\d+$/.test(telefono || ''))
+      return res.status(400).json({ error: 'Teléfono debe contener solo números' });
+
     try {
       const { data, error } = await supabase
         .from('clients')
@@ -69,6 +72,9 @@ export function setupRoutes(app) {
   app.put('/api/clients/:id', async (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, pagado } = req.body;
+
+    if (telefono !== undefined && !/^\d+$/.test(telefono))
+      return res.status(400).json({ error: 'Teléfono debe contener solo números' });
 
     try {
       const { data, error } = await supabase
@@ -96,6 +102,22 @@ export function setupRoutes(app) {
 
       if (error) throw error;
       res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // GET payment history (for the morosidad report)
+  app.get('/api/payment-history', async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_history')
+        .select('*')
+        .order('anio', { ascending: false })
+        .order('mes', { ascending: false });
+
+      if (error) throw error;
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

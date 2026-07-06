@@ -222,7 +222,9 @@
         <input
           type="tel"
           id="telefono"
+          inputmode="numeric"
           placeholder="Teléfono (ej: 1123456789)"
+          oninput="this.value=this.value.replace(/\D/g,'')"
         />
         <label>
           <input type="checkbox" id="pagado" />
@@ -238,19 +240,41 @@
         <div style="gap: 10px; display: flex;">
           <button onclick="sendMessages('day8')" style="background: #28a745;">📱 Recordatorio Día 8</button>
           <button onclick="sendMessages('day10')" style="background: #dc3545;">⚠️ Aviso Día 10</button>
+          <button onclick="toggleHistoryView()" style="background: #6f42c1;">📊 Histórico</button>
         </div>
       </div>
       <div id="sendLog" style="display:none; margin-bottom: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-size: 13px; max-height: 220px; overflow-y: auto;"></div>
-      <div style="margin-bottom: 15px;">
-        <input
-          type="text"
-          id="searchNombre"
-          placeholder="Buscar por nombre..."
-          oninput="filterClients()"
-          style="width: 100%; max-width: 300px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-        />
+
+      <div id="clientsView">
+        <div style="margin-bottom: 15px;">
+          <input
+            type="text"
+            id="searchNombre"
+            placeholder="Buscar por nombre..."
+            oninput="filterClients()"
+            style="width: 100%; max-width: 300px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+          />
+        </div>
+        <div id="clientsList"></div>
       </div>
-      <div id="clientsList"></div>
+
+      <div id="historyView" style="display:none;">
+        <div style="display:flex; gap:10px; margin-bottom: 15px; flex-wrap: wrap; align-items:center;">
+          <select id="historyMeses" onchange="renderHistory()" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
+            <option value="3" selected>Últimos 3 meses</option>
+            <option value="6">Últimos 6 meses</option>
+            <option value="12">Últimos 12 meses</option>
+          </select>
+          <input
+            type="text"
+            id="searchHistoryNombre"
+            placeholder="Buscar por nombre..."
+            oninput="renderHistory()"
+            style="flex:1; min-width:200px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+          />
+        </div>
+        <div id="historyList"></div>
+      </div>
     </div>
   </div>
   </div><!-- /appScreen -->
@@ -429,7 +453,7 @@
 
     function startEdit(id, nombre, telefono) {
       document.getElementById(`nombre-${id}`).innerHTML = `<input type="text" value="${nombre}" id="edit-nombre-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;">`;
-      document.getElementById(`telefono-${id}`).innerHTML = `<input type="tel" value="${telefono}" id="edit-telefono-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;">`;
+      document.getElementById(`telefono-${id}`).innerHTML = `<input type="tel" inputmode="numeric" value="${telefono}" id="edit-telefono-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;" oninput="this.value=this.value.replace(/\\D/g,'')">`;
       const actions = document.querySelector(`#row-${id} .actions-cell`);
       actions.innerHTML = `
         <button style="background:#28a745; padding:6px 12px; font-size:12px;" onclick="saveEdit(${id})">Guardar</button>
@@ -535,6 +559,90 @@
         showMessage('Error al enviar mensajes', 'error');
         console.error(error);
       }
+    }
+
+    let allHistory = [];
+
+    function toggleHistoryView() {
+      const clientsView = document.getElementById('clientsView');
+      const historyView = document.getElementById('historyView');
+      const showingHistory = historyView.style.display === 'none';
+      clientsView.style.display = showingHistory ? 'none' : 'block';
+      historyView.style.display = showingHistory ? 'block' : 'none';
+      if (showingHistory) loadHistory();
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch(`${API_URL}/payment-history`, { headers: authHeaders() });
+        if (handleUnauthorized(response)) return;
+        allHistory = await response.json();
+        renderHistory();
+      } catch (error) {
+        showMessage('Error cargando histórico', 'error');
+        console.error(error);
+      }
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      const query = document.getElementById('searchHistoryNombre').value.trim().toLowerCase();
+      const meses = parseInt(document.getElementById('historyMeses').value, 10);
+
+      const periodo = (h) => `${h.anio}-${String(h.mes).padStart(2, '0')}`;
+      const periodos = [...new Set(allHistory.map(periodo))].sort().reverse().slice(0, meses);
+      const filtered = allHistory.filter(h => periodos.includes(periodo(h)));
+
+      const groups = {};
+      filtered.forEach(h => {
+        const key = h.client_id ?? `deleted:${h.nombre}`;
+        if (!groups[key]) groups[key] = { nombre: h.nombre, registros: [] };
+        groups[key].registros.push(h);
+      });
+
+      const rows = Object.values(groups)
+        .filter(g => g.nombre.toLowerCase().includes(query))
+        .map(g => ({
+          nombre: g.nombre,
+          noPagados: g.registros.filter(r => !r.pagado)
+        }))
+        .sort((a, b) => b.noPagados.length - a.noPagados.length || a.nombre.localeCompare(b.nombre));
+
+      if (rows.length === 0) {
+        container.innerHTML = '<div class="empty-state">Sin datos de histórico todavía.</div>';
+        return;
+      }
+
+      const mesNombre = (m) => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][m - 1];
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Meses no pagados (de últimos ${periodos.length})</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rows.forEach(r => {
+        const detalle = r.noPagados.length > 0
+          ? `<details><summary>Ver</summary>${r.noPagados.map(h => `${mesNombre(h.mes)} ${h.anio}`).join(', ')}</details>`
+          : '—';
+
+        html += `
+          <tr>
+            <td>${r.nombre}</td>
+            <td>${r.noPagados.length}</td>
+            <td>${detalle}</td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     checkAuth();

@@ -78,9 +78,41 @@ export async function sendMessagesManual(messageType) {
   return { success: true, sent, total: clients.length, results };
 }
 
+// Archives the month that just ended into payment_history, then resets
+// pagado=false for the new month. Run by the day-1 cron (see vercel.json).
+export async function runMonthlyReset() {
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const mes = prev.getMonth() + 1;
+  const anio = prev.getFullYear();
+
+  const { data: clients, error } = await supabase.from('clients').select('id, nombre, pagado');
+  if (error) throw error;
+
+  const history = clients.map(c => ({ client_id: c.id, nombre: c.nombre, mes, anio, pagado: c.pagado }));
+  const { error: histError } = await supabase
+    .from('payment_history')
+    .upsert(history, { onConflict: 'client_id,mes,anio' });
+  if (histError) throw histError;
+
+  const { error: resetError } = await supabase
+    .from('clients')
+    .update({ pagado: false, updated_at: new Date() })
+    .gt('id', 0);
+  if (resetError) throw resetError;
+
+  return { archived: history.length, mes, anio };
+}
+
 // Cron endpoints — triggered by Vercel Cron (see vercel.json)
 app.post('/api/cron/keepalive', async (req, res) => {
   await supabase.from('clients').select('id').limit(1);
+  res.json({ ok: true });
+});
+
+app.post('/api/cron/monthly-reset', (req, res) => {
+  console.log('⏰ CRON: Archivado + reset mensual');
+  runMonthlyReset().then(r => console.log('✅ Archivado:', r)).catch(console.error);
   res.json({ ok: true });
 });
 
