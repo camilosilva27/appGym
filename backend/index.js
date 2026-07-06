@@ -79,6 +79,11 @@ export async function sendMessagesManual(messageType) {
 }
 
 // Cron endpoints — triggered by Vercel Cron (see vercel.json)
+app.post('/api/cron/keepalive', async (req, res) => {
+  await supabase.from('clients').select('id').limit(1);
+  res.json({ ok: true });
+});
+
 app.post('/api/cron/day8', (req, res) => {
   console.log('⏰ CRON: Envío automático día 8');
   sendMessagesManual('day8').catch(console.error);
