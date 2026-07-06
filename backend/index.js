@@ -22,6 +22,42 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Cron endpoints — triggered by Vercel Cron (see vercel.json). Registered
+// before setupRoutes() so they're NOT covered by the JWT-based verifyToken
+// middleware: Vercel Cron can't supply a user JWT, so these check CRON_SECRET
+// instead (Vercel sends it as Authorization: Bearer <CRON_SECRET> when the
+// env var is configured on the project).
+function verifyCronSecret(req, res, next) {
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  if (!process.env.CRON_SECRET || req.headers.authorization !== expected) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+  next();
+}
+
+app.post('/api/cron/keepalive', verifyCronSecret, async (req, res) => {
+  await supabase.from('clients').select('id').limit(1);
+  res.json({ ok: true });
+});
+
+app.post('/api/cron/monthly-reset', verifyCronSecret, (req, res) => {
+  console.log('⏰ CRON: Archivado + reset mensual');
+  runMonthlyReset().then(r => console.log('✅ Archivado:', r)).catch(console.error);
+  res.json({ ok: true });
+});
+
+app.post('/api/cron/day8', verifyCronSecret, (req, res) => {
+  console.log('⏰ CRON: Envío automático día 8');
+  sendMessagesManual('day8').catch(console.error);
+  res.json({ ok: true });
+});
+
+app.post('/api/cron/day10', verifyCronSecret, (req, res) => {
+  console.log('⏰ CRON: Envío automático día 10');
+  sendMessagesManual('day10').catch(console.error);
+  res.json({ ok: true });
+});
+
 setupRoutes(app);
 
 // Formats Argentine phone numbers to WhatsApp format: 549XXXXXXXXXX (13 digits)
@@ -103,30 +139,6 @@ export async function runMonthlyReset() {
 
   return { archived: history.length, mes, anio };
 }
-
-// Cron endpoints — triggered by Vercel Cron (see vercel.json)
-app.post('/api/cron/keepalive', async (req, res) => {
-  await supabase.from('clients').select('id').limit(1);
-  res.json({ ok: true });
-});
-
-app.post('/api/cron/monthly-reset', (req, res) => {
-  console.log('⏰ CRON: Archivado + reset mensual');
-  runMonthlyReset().then(r => console.log('✅ Archivado:', r)).catch(console.error);
-  res.json({ ok: true });
-});
-
-app.post('/api/cron/day8', (req, res) => {
-  console.log('⏰ CRON: Envío automático día 8');
-  sendMessagesManual('day8').catch(console.error);
-  res.json({ ok: true });
-});
-
-app.post('/api/cron/day10', (req, res) => {
-  console.log('⏰ CRON: Envío automático día 10');
-  sendMessagesManual('day10').catch(console.error);
-  res.json({ ok: true });
-});
 
 export default app;
 

@@ -33,9 +33,13 @@ POST /api/clients            — crea cliente { nombre, telefono, pagado }
 PUT  /api/clients/:id        — actualiza { nombre, telefono, pagado }
 DELETE /api/clients/:id      — elimina cliente
 POST /api/send-messages      — envío manual { messageType: 'day8' | 'day10' }
+GET  /api/payment-history    — histórico mensual de pagos (para el reporte de morosidad)
 POST /api/cron/day8          — llamado por Vercel Cron día 8
 POST /api/cron/day10         — llamado por Vercel Cron día 10
+POST /api/cron/monthly-reset — llamado por Vercel Cron día 1: archiva el mes anterior en payment_history y resetea pagado=false
 ```
+
+Los `/api/cron/*` NO usan JWT (Vercel Cron no puede mandar uno) — se protegen con `CRON_SECRET` vía middleware `verifyCronSecret` en `backend/index.js`, registrados antes de `setupRoutes()` para no heredar el `verifyToken` global.
 
 ## Supabase — tablas
 
@@ -43,12 +47,15 @@ POST /api/cron/day10         — llamado por Vercel Cron día 10
 
 **users**: `id` (uuid), `username`, `password_hash`, `gym_nombre`
 
+**payment_history**: `id`, `client_id` (FK a clients, `ON DELETE SET NULL`), `nombre` (snapshot), `mes`, `anio`, `pagado`, `created_at` — snapshot mensual generado por `runMonthlyReset()`
+
 ## Variables de entorno
 
 Definidas en `backend/.env` localmente y en Vercel como Environment Variables:
 
 ```
 JWT_SECRET
+CRON_SECRET                # requerido por los endpoints /api/cron/* — Vercel lo manda como Authorization: Bearer <CRON_SECRET>
 SUPABASE_URL
 SUPABASE_KEY
 WHATSAPP_ACCESS_TOKEN      # expira cada 24hs en modo dev, usar System User en producción
