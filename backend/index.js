@@ -40,22 +40,38 @@ app.post('/api/cron/keepalive', verifyCronSecret, async (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/cron/monthly-reset', verifyCronSecret, (req, res) => {
+app.post('/api/cron/monthly-reset', verifyCronSecret, async (req, res) => {
   console.log('⏰ CRON: Archivado + reset mensual');
-  runMonthlyReset().then(r => console.log('✅ Archivado:', r)).catch(console.error);
-  res.json({ ok: true });
+  try {
+    const result = await runMonthlyReset();
+    console.log('✅ Archivado:', result);
+    res.json({ ok: true, ...result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
-app.post('/api/cron/day8', verifyCronSecret, (req, res) => {
+app.post('/api/cron/day8', verifyCronSecret, async (req, res) => {
   console.log('⏰ CRON: Envío automático día 8');
-  sendMessagesManual('day8').catch(console.error);
-  res.json({ ok: true });
+  try {
+    const result = await sendMessagesManual('day8');
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
-app.post('/api/cron/day10', verifyCronSecret, (req, res) => {
+app.post('/api/cron/day10', verifyCronSecret, async (req, res) => {
   console.log('⏰ CRON: Envío automático día 10');
-  sendMessagesManual('day10').catch(console.error);
-  res.json({ ok: true });
+  try {
+    const result = await sendMessagesManual('day10');
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ ok: false, error: error.message });
+  }
 });
 
 setupRoutes(app);
