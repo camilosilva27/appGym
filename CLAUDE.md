@@ -79,3 +79,11 @@ Para activar los templates reales cuando sean aprobados, editar `backend/index.j
 ## Formato de teléfonos
 
 Argentina: el backend convierte cualquier formato a `54XXXXXXXXXX` (sin `+`) antes de llamar a la API de WhatsApp. Ver `formatPhoneNumber()` en `backend/index.js`.
+
+## Diseño del frontend (rediseño UI, rama `rediseno-ui`)
+
+- Todo el CSS vive en el `<style>` de `docs/index.html`; tokens en `:root` al principio (`--ground #fbf7f8`, `--accent #b8336a` frambuesa, `--accent-soft/--accent-track` tintes, pills `--pill-*`, radios 8/6px, controles 36px, 44px en teléfono). Tipografía DM Sans (Google Fonts).
+- Estilo "accent-ladder" de taste-skill (app screens): el tono pleno sólo en marcas chicas (botón primario, barra de cuotas, interruptor, foco); tintes pálidos en áreas; sin sombras en reposo (sólo el toast `#message`), bordes 1px, sin emoji.
+- Estructura: barra superior (marca + `#gymNombre` + Salir) → título "Cuotas de <mes>" con la frase de hallazgo (`#monthFinding`) → panel resumen (pagaron X de N + tira del mes con día 8 / día 10 / hoy + botones de envío y `#sendLog`) → alta de cliente (plegada en teléfono, `toggleAddForm`) → tabs Clientes / Histórico (`showView` delega en `toggleHistoryView`).
+- `renderSummary()` y `renderMonthStrip()` sólo leen `allClients` / la fecha local; no hay endpoints nuevos. `loadClients()` ahora llama a `filterClients()` (respeta la búsqueda activa) en vez de `renderClients(allClients)`.
+- Teléfono (≤640px): las tablas se vuelven filas de dos líneas por CSS grid (clases `c-name`, `c-phone`, `c-status`, `c-pay`, `actions-cell`; histórico `h-*`). Se conservan los ids que usa el JS (`row-<id>`, `nombre-<id>`, `telefono-<id>`, `.actions-cell`).

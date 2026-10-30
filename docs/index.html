@@ -3,286 +3,496 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#fbf7f8">
   <title>AppGym - Gestión de Clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    /* ============================================================
+       Diseño: estilo "accent-ladder" (taste-skill, app screens).
+       Un solo tono (frambuesa) a pleno sólo en marcas chicas
+       (botón primario, barra de cuotas, foco); sus tintes pálidos
+       en áreas. Sin sombras en reposo, bordes de 1px.
+       Shell: barra superior + columna centrada (dos vistas, sin sidebar).
+       ============================================================ */
+    :root {
+      --ground: #fbf7f8;
+      --surface: #ffffff;
+      --raised: #f6f1f3;
+      --border: #ebe5e8;
+      --rule: #f2eef0;
+      --control: #d6cfd3;
+      --text: #1a1216;
+      --muted: #645a60;
+      --accent: #b8336a;
+      --accent-strong: #9a2757;
+      --accent-soft: #fdf2f7;
+      --accent-track: #f8dbe8;
+      --accent-ink: #6b1d3e;
+      --positive: #247b50;
+      --negative: #c4242a;
+      --pill-positive-bg: #dcfce7; --pill-positive-ink: #14532d;
+      --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+      --pill-neutral-bg: #f3f0f1; --pill-neutral-ink: #3d3439;
+      --primary: #1a1216;
+      --font: "DM Sans", Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --fs-title: 24px; --fs-section: 18px; --fs-kpi: 24px; --fs-body: 14px; --fs-small: 12px;
+      --radius-card: 8px;
+      --radius-control: 6px;
+      --control-height: 36px;
+      --gap: 24px;
+      --pad: 24px;
+      --column: 1100px;
     }
 
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
+      margin: 0;
+      background: var(--ground);
+      color: var(--text);
+      font: var(--fs-body)/20px var(--font);
+      -webkit-font-smoothing: antialiased;
     }
+    h1, h2, h3, p { margin: 0; }
+    button, input, select { font: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    table, .num { font-variant-numeric: tabular-nums; }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
+    /* ---------- marca ---------- */
+    .mark {
+      width: 32px; height: 32px; flex: none;
+      display: grid; place-items: center;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: var(--accent-soft);
+      color: var(--accent);
     }
+    .mark svg { width: 20px; height: 20px; }
 
-    h1 {
-      color: #333;
-      margin-bottom: 30px;
-      text-align: center;
+    /* ---------- controles ---------- */
+    .field {
+      height: var(--control-height);
+      padding: 0 12px;
+      border: 1px solid var(--control);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      font-size: var(--fs-body);
+      min-width: 0;
+      transition: border-color 150ms;
     }
-
-    .form-section {
-      background: #f9f9f9;
-      padding: 20px;
-      border-radius: 6px;
-      margin-bottom: 30px;
-      border-left: 4px solid #007bff;
-    }
-
-    .form-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-    }
-
-    input[type="text"],
-    input[type="tel"] {
-      flex: 1;
-      min-width: 200px;
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
+    .field:hover { border-color: #bdb3b8; }
+    .field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-track); }
+    .field::placeholder { color: #8a7f85; }
+    .field-label { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-small); color: var(--muted); }
 
     button {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
+      height: var(--control-height);
+      padding: 0 14px;
+      border: 1px solid var(--control);
+      border-radius: var(--radius-control);
+      background: var(--surface);
+      color: var(--text);
+      font-size: var(--fs-body);
       font-weight: 500;
-      transition: background 0.2s;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 150ms, border-color 150ms, transform 120ms;
     }
+    button:hover { background: var(--raised); }
+    button:active { transform: translateY(1px); }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+    button.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+    button.ghost:hover { background: var(--raised); color: var(--text); }
+    button.small { height: 30px; padding: 0 10px; font-size: 13px; }
+    button.delete { color: var(--negative); }
+    button.delete:hover { background: var(--pill-negative-bg); border-color: #f3c7c2; }
 
-    button:hover {
-      background: #0056b3;
+    /* interruptor de cuota (es el mismo checkbox de siempre) */
+    .switch {
+      appearance: none; -webkit-appearance: none;
+      width: 36px; height: 20px; margin: 0; flex: none;
+      border-radius: 999px;
+      background: #ddd5d9;
+      position: relative; cursor: pointer;
+      transition: background 150ms;
     }
-
-    button.delete {
-      background: #dc3545;
-      padding: 6px 12px;
-      font-size: 12px;
+    .switch::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff;
+      transition: transform 150ms;
     }
+    .switch:checked { background: var(--accent); }
+    .switch:checked::after { transform: translateX(16px); }
+    .switch-label { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--text); cursor: pointer; }
 
-    button.delete:hover {
-      background: #c82333;
+    /* ---------- login ---------- */
+    #loginScreen { min-height: 100svh; padding: 16px; }
+    .login-wrap { max-width: 360px; margin: 12vh auto 0; }
+    .login-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; font-weight: 600; font-size: 16px; }
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 16px;
     }
+    .login-card .login-title { font-size: var(--fs-title); line-height: 30px; font-weight: 700; }
+    .login-card p { color: var(--muted); margin-top: -8px; }
+    .login-card .field { height: 40px; width: 100%; }
+    .login-card button { height: 40px; margin-top: 4px; }
 
-    .table-section {
-      overflow-x: auto;
+    /* ---------- shell ---------- */
+    .topbar {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: var(--ground);
     }
+    .topbar-inner, .page { max-width: var(--column); margin: 0 auto; padding: 0 var(--pad); }
+    .topbar-inner { height: 100%; display: flex; align-items: center; gap: 10px; }
+    .brand-name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .brand-sub { color: var(--muted); font-size: var(--fs-small); }
+    .topbar .spacer { flex: 1; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    .page { padding-top: 32px; padding-bottom: 64px; display: flex; flex-direction: column; gap: var(--gap); }
+
+    .title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .title-row h1 { font-size: var(--fs-title); line-height: 30px; font-weight: 700; letter-spacing: -0.01em; }
+    .title-row p { color: var(--muted); margin-top: 4px; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
     }
+    .panel-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .panel h2 { font-size: 16px; line-height: 24px; font-weight: 600; }
+    .panel .hint { color: var(--muted); font-size: 13px; }
 
-    thead {
-      background: #f1f1f1;
+    /* ---------- resumen del mes (cuotas + calendario de envíos) ---------- */
+    .month {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     }
+    .month > div { padding: 20px 24px; }
+    .month > div + div { border-left: 1px solid var(--border); }
+    .month-label { color: var(--muted); font-size: 13px; }
+    .month-figure { font-size: var(--fs-kpi); line-height: 32px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .month-figure .of { color: var(--muted); font-weight: 400; font-size: 16px; }
+    .track { height: 8px; border-radius: 999px; background: var(--accent-track); margin: 14px 0 10px; overflow: hidden; }
+    .track > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 300ms ease; }
+    .month-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    .month-legend b { color: var(--text); font-weight: 600; }
+    .month-legend .owe b { color: var(--negative); }
 
+    /* tira de días del mes: día 8 y día 10 marcados, hoy en el tono */
+    .days { position: relative; height: 28px; margin: 18px 0 6px; }
+    .days::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: var(--rule); border-radius: 2px; }
+    .days .elapsed { position: absolute; left: 0; top: 13px; height: 2px; background: var(--control); border-radius: 2px; }
+    .days .tick { position: absolute; top: 7px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+    .days .tick.done { background: var(--muted); }
+    .days .today { position: absolute; top: 2px; width: 2px; height: 24px; margin-left: -1px; background: var(--accent); }
+    .days-labels { position: relative; height: 18px; font-size: var(--fs-small); color: var(--muted); }
+    .days-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+    .days-labels .first { transform: none; left: 0; }
+    .days-labels .last { transform: none; right: 0; }
+    .send-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .send-row button { flex: 1; }
+
+    /* ---------- alta de cliente ---------- */
+    .add { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+    .form-group { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; gap: 12px; align-items: end; }
+    .form-group .switch-label { height: var(--control-height); }
+    .add-toggle { display: none; }
+
+    /* ---------- tabs + barra de herramientas ---------- */
+    .tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); }
+    .tab {
+      height: 40px; padding: 0; border: 0; border-radius: 0;
+      background: none; color: var(--muted);
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .tab:hover { background: none; color: var(--text); }
+    .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--text); }
+
+    .toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 16px 0 8px; }
+    .toolbar .field { width: 300px; max-width: 100%; }
+    .toolbar select.field { width: auto; }
+    .count { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+    /* ---------- tablas ---------- */
+    .table-section { min-width: 0; }
+    table { width: 100%; border-collapse: collapse; }
     th {
-      padding: 12px;
-      text-align: left;
-      font-weight: 600;
-      color: #333;
-      border-bottom: 2px solid #ddd;
+      height: 38px; padding: 0 12px; text-align: left;
+      font-size: var(--fs-small); font-weight: 400; color: var(--muted);
+      border-bottom: 1px solid var(--border);
     }
-
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      color: #666;
-    }
-
-    tr:hover {
-      background: #f9f9f9;
-    }
-
-    .checkbox-cell {
-      text-align: center;
-    }
-
-    .actions-cell {
-      text-align: center;
-    }
+    td { height: 52px; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+    tbody tr { transition: background 120ms; }
+    tbody tr:hover { background: #fdfafb; }
+    th.right, td.right { text-align: right; }
+    .client-name { font-weight: 500; }
+    .phone { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .actions-cell { text-align: right; white-space: nowrap; }
+    .actions-cell button + button { margin-left: 6px; }
+    .edit-input { width: 100%; height: 32px; }
 
     .status-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
+      display: inline-flex; align-items: center; height: 22px; padding: 0 8px;
+      border-radius: 999px; font-size: var(--fs-small); font-weight: 500; white-space: nowrap;
     }
+    .status-paid { background: var(--pill-positive-bg); color: var(--pill-positive-ink); }
+    .status-unpaid { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+    .status-neutral { background: var(--pill-neutral-bg); color: var(--pill-neutral-ink); }
 
-    .status-paid {
-      background: #d4edda;
-      color: #155724;
-    }
+    details summary { cursor: pointer; color: var(--accent-ink); font-size: 13px; }
+    details[open] summary { margin-bottom: 4px; }
+    .months-list { color: var(--muted); font-size: 13px; }
 
-    .status-unpaid {
-      background: #f8d7da;
-      color: #721c24;
-    }
-
+    /* ---------- estados ---------- */
     .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #999;
+      text-align: center; padding: 48px 16px; color: var(--muted);
+      border: 1px dashed var(--control); border-radius: var(--radius-card); margin-top: 8px;
+    }
+    .loading { text-align: center; padding: 32px; color: var(--muted); }
+
+    /* #message: avisos flotantes; #loginError: en línea */
+    #message { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; width: min(440px, calc(100% - 32px)); }
+    .error, .success {
+      padding: 12px 14px; border-radius: var(--radius-control);
+      font-size: var(--fs-body); border: 1px solid;
+    }
+    #message .error, #message .success { box-shadow: 0 8px 24px rgba(26, 18, 22, 0.12); animation: rise 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+    .error { background: #fff6f5; color: var(--pill-negative-ink); border-color: #f3c7c2; }
+    .success { background: #f3fcf6; color: var(--pill-positive-ink); border-color: #bfe8cd; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    #sendLog {
+      margin-top: 14px; max-height: 220px; overflow-y: auto;
+      border-top: 1px solid var(--rule); padding-top: 8px; font-size: 13px;
+    }
+    .log-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+    .log-row code { color: var(--muted); font-size: 12px; }
+    .log-row .log-err { color: var(--negative); font-size: 12px; flex-basis: 100%; }
+
+    /* ---------- tablet ---------- */
+    @media (max-width: 900px) {
+      .form-group { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .form-group button { width: 100%; }
     }
 
-    .loading {
-      text-align: center;
-      padding: 20px;
-      color: #999;
-    }
+    /* ---------- teléfono: tablas a filas de dos líneas ---------- */
+    @media (max-width: 640px) {
+      :root { --pad: 16px; --gap: 16px; }
+      .page { padding-top: 20px; }
+      .brand-sub { display: none; }
+      .title-row h1 { font-size: 22px; }
+      .month { grid-template-columns: 1fr; }
+      .month > div { padding: 16px; }
+      .month > div + div { border-left: 0; border-top: 1px solid var(--border); }
+      .add { padding: 16px; }
+      .add .panel-head h2, .add .hint { display: none; }
+      .add .add-toggle { display: block; width: 100%; }
+      .add:not(.open) .form-group { display: none; }
+      .add.open .add-toggle { display: none; }
+      .add.open .panel-head h2 { display: block; }
+      .form-group { grid-template-columns: 1fr; }
+      .form-group .switch-label { height: 44px; }
+      .field, button { height: 44px; }
+      .field { font-size: 16px; } /* evita el zoom de iOS al enfocar */
+      button.small { height: 36px; }
+      .toolbar .field { width: 100%; }
+      .send-row button { flex-basis: 100%; }
 
-    .error {
-      background: #f8d7da;
-      color: #721c24;
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      border: 1px solid #f5c6cb;
-    }
+      table, thead, tbody, tr, td { display: block; }
+      thead { display: none; }
+      tbody tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas: "name status pay" "phone actions actions";
+        align-items: center;
+        column-gap: 12px; row-gap: 4px;
+        padding: 12px 0; border-bottom: 1px solid var(--rule);
+      }
+      tbody tr:hover { background: none; }
+      td { height: auto; padding: 0; border: 0; }
+      td.c-name { grid-area: name; font-size: 15px; }
+      td.c-phone { grid-area: phone; font-size: 13px; }
+      td.c-status { grid-area: status; text-align: right; }
+      td.c-pay { grid-area: pay; text-align: right; }
+      td.actions-cell { grid-area: actions; display: flex; gap: 4px; justify-content: flex-end; }
+      td.actions-cell button { margin: 0; height: 32px; padding: 0 8px; border-color: transparent; background: none; }
+      td.actions-cell button:not(.delete):not(.primary) { color: var(--muted); }
+      td.actions-cell button.primary { background: var(--accent); color: #fff; }
+      td.c-name:has(input), td.c-phone:has(input) { grid-column: 1 / -1; }
+      tbody tr:has(.edit-input) { grid-template-areas: "name name name" "phone phone phone" "actions actions actions"; row-gap: 8px; }
 
-    .success {
-      background: #d4edda;
-      color: #155724;
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 20px;
-      border: 1px solid #c3e6cb;
+      /* histórico */
+      tbody tr.h-row { grid-template-areas: "name count" "detail detail"; }
+      td.h-name { grid-area: name; font-size: 15px; }
+      td.h-count { grid-area: count; }
+      td.h-detail { grid-area: detail; }
+      td.h-count::after { content: " meses sin pagar"; color: var(--muted); font-size: 13px; }
     }
+    .c-pay .pay-text { display: none; }
   </style>
 </head>
 <body>
   <!-- Login -->
-  <div id="loginScreen" style="display:none; max-width:360px; margin:80px auto;">
-    <div style="background:white; padding:40px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-      <h1 style="text-align:center; margin-bottom:30px; font-size:22px;">🏋️ AppGym</h1>
-      <div id="loginError"></div>
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <input type="text" id="loginUsername" placeholder="Usuario" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;" />
-        <input type="password" id="loginPassword" placeholder="Contraseña" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;" onkeydown="if(event.key==='Enter') login()" />
-        <button onclick="login()" style="padding:12px;">Ingresar</button>
+  <div id="loginScreen" style="display:none;">
+    <div class="login-wrap">
+      <div class="login-brand">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M3 9.5v5M18 7v10M21 9.5v5M6 12h12"/></svg>
+        </span>
+        AppGym
+      </div>
+      <div class="login-card">
+        <h2 class="login-title">Ingresá a tu panel</h2>
+        <p>Clientes, cuotas y recordatorios por WhatsApp.</p>
+        <div id="loginError"></div>
+        <label class="field-label">Usuario
+          <input class="field" type="text" id="loginUsername" placeholder="Tu usuario" autocomplete="username" />
+        </label>
+        <label class="field-label">Contraseña
+          <input class="field" type="password" id="loginPassword" placeholder="Tu contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()" />
+        </label>
+        <button class="primary" onclick="login()">Ingresar</button>
       </div>
     </div>
   </div>
 
   <!-- App -->
   <div id="appScreen" style="display:none;">
-  <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-      <h1 style="margin:0;">🏋️ <span id="gymNombre">AppGym</span></h1>
-      <button onclick="logout()" style="background:#6c757d; padding:8px 16px; font-size:13px;">Salir</button>
-    </div>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <span class="mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M3 9.5v5M18 7v10M21 9.5v5M6 12h12"/></svg>
+        </span>
+        <div style="min-width:0;">
+          <div class="brand-name" id="gymNombre">AppGym</div>
+        </div>
+        <span class="brand-sub">· Panel de cuotas</span>
+        <span class="spacer"></span>
+        <button class="ghost small" onclick="logout()">Salir</button>
+      </div>
+    </header>
 
     <div id="message"></div>
 
-    <div class="form-section">
-      <h2 style="margin-bottom: 15px; font-size: 18px; color: #333;">Agregar Cliente</h2>
-      <div class="form-group">
-        <input
-          type="text"
-          id="nombre"
-          placeholder="Nombre del cliente"
-        />
-        <input
-          type="tel"
-          id="telefono"
-          inputmode="numeric"
-          placeholder="Teléfono (ej: 1123456789)"
-          oninput="this.value=this.value.replace(/\D/g,'')"
-        />
-        <label>
-          <input type="checkbox" id="pagado" />
-          Pagado
-        </label>
-        <button onclick="addClient()">Agregar Cliente</button>
-      </div>
-    </div>
-
-    <div class="table-section">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <h2 style="margin: 0; font-size: 18px; color: #333;">Clientes</h2>
-        <div style="gap: 10px; display: flex;">
-          <button onclick="sendMessages('day8')" style="background: #28a745;">📱 Recordatorio Día 8</button>
-          <button onclick="sendMessages('day10')" style="background: #dc3545;">⚠️ Aviso Día 10</button>
-          <button onclick="toggleHistoryView()" style="background: #6f42c1;">📊 Histórico</button>
+    <main class="page">
+      <div class="title-row">
+        <div>
+          <h1 id="monthTitle">Cuotas del mes</h1>
+          <p id="monthFinding">Cargando clientes…</p>
         </div>
       </div>
-      <div id="sendLog" style="display:none; margin-bottom: 15px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; padding: 12px; font-size: 13px; max-height: 220px; overflow-y: auto;"></div>
 
-      <div id="clientsView">
-        <div style="margin-bottom: 15px;">
-          <input
-            type="text"
-            id="searchNombre"
-            placeholder="Buscar por nombre..."
-            oninput="filterClients()"
-            style="width: 100%; max-width: 300px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-          />
+      <!-- Resumen del mes: cuánto se cobró y cuándo salen los avisos -->
+      <section class="panel month" aria-label="Resumen del mes">
+        <div>
+          <div class="month-label">Pagaron este mes</div>
+          <div class="month-figure"><span id="sumPaid">—</span> <span class="of">de <span id="sumTotal">—</span> clientes</span></div>
+          <div class="track" aria-hidden="true"><span id="sumTrack" style="width:0%"></span></div>
+          <div class="month-legend">
+            <span>Al día <b id="sumPaid2">—</b></span>
+            <span class="owe">Deben <b id="sumOwe">—</b></span>
+          </div>
         </div>
-        <div id="clientsList"></div>
-      </div>
+        <div>
+          <div class="panel-head">
+            <span class="month-label">Recordatorios por WhatsApp</span>
+          </div>
+          <div class="days" id="daysStrip" aria-hidden="true"></div>
+          <div class="days-labels" id="daysLabels" aria-hidden="true"></div>
+          <div class="send-row">
+            <button onclick="sendMessages('day8')">Enviar recordatorio día 8</button>
+            <button onclick="sendMessages('day10')">Enviar aviso día 10</button>
+          </div>
+          <div id="sendLog" style="display:none;"></div>
+        </div>
+      </section>
 
-      <div id="historyView" style="display:none;">
-        <div style="display:flex; gap:10px; margin-bottom: 15px; flex-wrap: wrap; align-items:center;">
-          <select id="historyMeses" onchange="renderHistory()" style="padding:10px 12px; border:1px solid #ddd; border-radius:4px; font-size:14px;">
-            <option value="3" selected>Últimos 3 meses</option>
-            <option value="6">Últimos 6 meses</option>
-            <option value="12">Últimos 12 meses</option>
-          </select>
-          <input
-            type="text"
-            id="searchHistoryNombre"
-            placeholder="Buscar por nombre..."
-            oninput="renderHistory()"
-            style="flex:1; min-width:200px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
-          />
+      <!-- Alta de cliente -->
+      <section class="panel add form-section">
+        <div class="panel-head">
+          <h2>Agregar cliente</h2>
+          <span class="hint">El teléfono va sin 0 ni 15, ej: 1123456789</span>
+          <button class="add-toggle" aria-expanded="false" aria-controls="addForm" onclick="toggleAddForm(this)">Agregar cliente</button>
         </div>
-        <div id="historyList"></div>
-      </div>
-    </div>
-  </div>
+        <div class="form-group" id="addForm">
+          <label class="field-label">Nombre
+            <input class="field" type="text" id="nombre" placeholder="Nombre y apellido" />
+          </label>
+          <label class="field-label">Teléfono
+            <input
+              class="field"
+              type="tel"
+              id="telefono"
+              inputmode="numeric"
+              placeholder="1123456789"
+              oninput="this.value=this.value.replace(/\D/g,'')"
+            />
+          </label>
+          <label class="switch-label">
+            <input class="switch" type="checkbox" id="pagado" />
+            Ya pagó este mes
+          </label>
+          <button class="primary" onclick="addClient()">Agregar cliente</button>
+        </div>
+      </section>
+
+      <!-- Listado / histórico -->
+      <section class="table-section">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" id="tabClients" aria-selected="true" onclick="showView('clients')">Clientes</button>
+          <button class="tab" role="tab" id="tabHistory" aria-selected="false" onclick="showView('history')">Histórico de pagos</button>
+        </div>
+
+        <div id="clientsView">
+          <div class="toolbar">
+            <input
+              class="field"
+              type="search"
+              id="searchNombre"
+              placeholder="Buscar por nombre"
+              oninput="filterClients()"
+            />
+            <span class="count" id="clientsCount"></span>
+          </div>
+          <div id="clientsList"><div class="loading">Cargando clientes…</div></div>
+        </div>
+
+        <div id="historyView" style="display:none;">
+          <div class="toolbar">
+            <input
+              class="field"
+              type="search"
+              id="searchHistoryNombre"
+              placeholder="Buscar por nombre"
+              oninput="renderHistory()"
+            />
+            <select class="field" id="historyMeses" onchange="renderHistory()">
+              <option value="3" selected>Últimos 3 meses</option>
+              <option value="6">Últimos 6 meses</option>
+              <option value="12">Últimos 12 meses</option>
+            </select>
+          </div>
+          <div id="historyList"><div class="loading">Cargando histórico…</div></div>
+        </div>
+      </section>
+    </main>
   </div><!-- /appScreen -->
 
   <script>
     const API_URL = 'https://app-gym-xi.vercel.app/api';
 
     let allClients = [];
+
+    const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
     function getToken() {
       return localStorage.getItem('token');
@@ -302,6 +512,7 @@
         document.getElementById('appScreen').style.display = 'block';
         const gym = localStorage.getItem('gym');
         if (gym) document.getElementById('gymNombre').textContent = gym;
+        renderMonthStrip();
         loadClients();
       } else {
         document.getElementById('loginScreen').style.display = 'block';
@@ -352,11 +563,60 @@
         const response = await fetch(`${API_URL}/clients`, { headers: authHeaders() });
         if (handleUnauthorized(response)) return;
         allClients = await response.json();
-        renderClients(allClients);
+        renderSummary();
+        filterClients();
       } catch (error) {
         showMessage('Error cargando clientes', 'error');
         console.error(error);
       }
+    }
+
+    // Resumen del mes: sólo lee allClients, no llama a la API
+    function renderSummary() {
+      const total = allClients.length;
+      const paid = allClients.filter(c => c.pagado).length;
+      const owe = total - paid;
+      const now = new Date();
+      const mes = MESES_LARGOS[now.getMonth()];
+
+      document.getElementById('monthTitle').textContent = `Cuotas de ${mes}`;
+      document.getElementById('sumPaid').textContent = paid;
+      document.getElementById('sumPaid2').textContent = paid;
+      document.getElementById('sumTotal').textContent = total;
+      document.getElementById('sumOwe').textContent = owe;
+      document.getElementById('sumTrack').style.width = total ? `${(paid / total) * 100}%` : '0%';
+
+      let finding;
+      if (total === 0) finding = 'Todavía no cargaste clientes. Empezá agregando el primero.';
+      else if (owe === 0) finding = `Todos los clientes pagaron la cuota de ${mes}.`;
+      else finding = `${owe} ${owe === 1 ? 'cliente debe' : 'clientes deben'} la cuota de ${mes}.`;
+      document.getElementById('monthFinding').textContent = finding;
+    }
+
+    // Tira de días del mes con los envíos automáticos (día 8 y 10) y hoy
+    function renderMonthStrip() {
+      const now = new Date();
+      const day = now.getDate();
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const pos = d => ((d - 1) / (daysInMonth - 1)) * 100;
+
+      document.getElementById('daysStrip').innerHTML = `
+        <span class="elapsed" style="width:${pos(day)}%"></span>
+        <span class="tick ${day >= 8 ? 'done' : ''}" style="left:${pos(8)}%"></span>
+        <span class="tick ${day >= 10 ? 'done' : ''}" style="left:${pos(10)}%"></span>
+        <span class="today" style="left:${pos(day)}%"></span>
+      `;
+      const hoy = `<b style="color: var(--accent-ink); font-weight: 600">Hoy ${day}</b>`;
+      let todayLabel = '';
+      if (day >= daysInMonth - 3) todayLabel = `<span class="last">${hoy}</span>`;
+      else if (day > 13) todayLabel = `<span style="left:${pos(day)}%">${hoy}</span>`;
+      document.getElementById('daysLabels').innerHTML = `
+        <span class="first">1</span>
+        <span style="left:${pos(8) - 2}%">Día 8</span>
+        <span style="left:${pos(10) + 6}%">Día 10</span>
+        ${todayLabel || ''}
+        ${day >= daysInMonth - 3 ? '' : `<span class="last">${daysInMonth}</span>`}
+      `;
     }
 
     function filterClients() {
@@ -367,9 +627,15 @@
 
     function renderClients(clients) {
       const container = document.getElementById('clientsList');
+      const countEl = document.getElementById('clientsCount');
+      countEl.textContent = clients.length === allClients.length
+        ? `${allClients.length} ${allClients.length === 1 ? 'cliente' : 'clientes'}`
+        : `${clients.length} de ${allClients.length}`;
 
       if (clients.length === 0) {
-        container.innerHTML = '<div class="empty-state">No hay clientes. Agrega uno para empezar.</div>';
+        container.innerHTML = allClients.length === 0
+          ? '<div class="empty-state">No hay clientes. Agregá uno para empezar.</div>'
+          : '<div class="empty-state">Ningún cliente coincide con la búsqueda.</div>';
         return;
       }
 
@@ -380,8 +646,8 @@
               <th>Nombre</th>
               <th>Teléfono</th>
               <th>Estado</th>
-              <th>Pagado</th>
-              <th>Acciones</th>
+              <th>Pagó</th>
+              <th class="right">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -389,24 +655,29 @@
 
       clients.forEach(client => {
         const statusBadge = client.pagado
-          ? '<span class="status-badge status-paid">✓ Pagado</span>'
-          : '<span class="status-badge status-unpaid">✗ No pagado</span>';
+          ? '<span class="status-badge status-paid">Al día</span>'
+          : '<span class="status-badge status-unpaid">Debe</span>';
 
         html += `
           <tr id="row-${client.id}">
-            <td id="nombre-${client.id}">${client.nombre}</td>
-            <td id="telefono-${client.id}">${client.telefono}</td>
-            <td>${statusBadge}</td>
-            <td class="checkbox-cell">
-              <input
-                type="checkbox"
-                ${client.pagado ? 'checked' : ''}
-                onchange="togglePayment(${client.id}, this.checked)"
-              />
+            <td class="c-name client-name" id="nombre-${client.id}">${client.nombre}</td>
+            <td class="c-phone phone" id="telefono-${client.id}">${client.telefono}</td>
+            <td class="c-status">${statusBadge}</td>
+            <td class="c-pay checkbox-cell">
+              <label class="switch-label">
+                <span class="pay-text">Pagó</span>
+                <input
+                  class="switch"
+                  type="checkbox"
+                  aria-label="Cuota pagada de ${client.nombre.replace(/"/g, '&quot;')}"
+                  ${client.pagado ? 'checked' : ''}
+                  onchange="togglePayment(${client.id}, this.checked)"
+                />
+              </label>
             </td>
-            <td class="actions-cell" style="display:flex; gap:6px; justify-content:center;">
-              <button style="background:#ffc107; color:#333; padding:6px 12px; font-size:12px;" onclick="startEdit(${client.id}, '${client.nombre.replace(/'/g, "\\'")}', '${client.telefono}')">Editar</button>
-              <button class="delete" onclick="deleteClient(${client.id})">Eliminar</button>
+            <td class="actions-cell">
+              <button class="small" onclick="startEdit(${client.id}, '${client.nombre.replace(/'/g, "\\'")}', '${client.telefono}')">Editar</button>
+              <button class="small delete" onclick="deleteClient(${client.id})">Eliminar</button>
             </td>
           </tr>
         `;
@@ -426,7 +697,7 @@
       const pagado = document.getElementById('pagado').checked;
 
       if (!nombre || !telefono) {
-        showMessage('Completa nombre y teléfono', 'error');
+        showMessage('Completá nombre y teléfono', 'error');
         return;
       }
 
@@ -443,7 +714,7 @@
         document.getElementById('telefono').value = '';
         document.getElementById('pagado').checked = false;
 
-        showMessage('Cliente agregado exitosamente', 'success');
+        showMessage('Cliente agregado', 'success');
         loadClients();
       } catch (error) {
         showMessage('Error al agregar cliente', 'error');
@@ -452,12 +723,12 @@
     }
 
     function startEdit(id, nombre, telefono) {
-      document.getElementById(`nombre-${id}`).innerHTML = `<input type="text" value="${nombre}" id="edit-nombre-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;">`;
-      document.getElementById(`telefono-${id}`).innerHTML = `<input type="tel" inputmode="numeric" value="${telefono}" id="edit-telefono-${id}" style="width:100%; padding:4px; border:1px solid #ddd; border-radius:4px;" oninput="this.value=this.value.replace(/\\D/g,'')">`;
+      document.getElementById(`nombre-${id}`).innerHTML = `<input class="field edit-input" type="text" value="${nombre}" id="edit-nombre-${id}" aria-label="Nombre">`;
+      document.getElementById(`telefono-${id}`).innerHTML = `<input class="field edit-input" type="tel" inputmode="numeric" value="${telefono}" id="edit-telefono-${id}" aria-label="Teléfono" oninput="this.value=this.value.replace(/\\D/g,'')">`;
       const actions = document.querySelector(`#row-${id} .actions-cell`);
       actions.innerHTML = `
-        <button style="background:#28a745; padding:6px 12px; font-size:12px;" onclick="saveEdit(${id})">Guardar</button>
-        <button style="background:#6c757d; padding:6px 12px; font-size:12px;" onclick="loadClients()">Cancelar</button>
+        <button class="small primary" onclick="saveEdit(${id})">Guardar</button>
+        <button class="small" onclick="loadClients()">Cancelar</button>
       `;
     }
 
@@ -521,10 +792,12 @@
       }
     }
 
+    let messageTimer;
     function showMessage(text, type) {
       const messageDiv = document.getElementById('message');
-      messageDiv.innerHTML = `<div class="${type}">${text}</div>`;
-      setTimeout(() => {
+      messageDiv.innerHTML = `<div class="${type}" role="status">${text}</div>`;
+      clearTimeout(messageTimer);
+      messageTimer = setTimeout(() => {
         messageDiv.innerHTML = '';
       }, 5000);
     }
@@ -544,13 +817,14 @@
 
         const result = await response.json();
         const typeLabel = messageType === 'day8' ? 'Día 8' : 'Día 10';
-        showMessage(`✓ Mensajes enviados a ${result.sent}/${result.total} clientes (${typeLabel})`, 'success');
+        showMessage(`Mensajes enviados a ${result.sent}/${result.total} clientes (${typeLabel})`, 'success');
 
         if (result.results && result.results.length > 0) {
           logEl.innerHTML = result.results.map(r =>
-            `<div style="padding: 3px 0; border-bottom: 1px solid #eee;">
-              ${r.ok ? '✅' : '❌'} <strong>${r.nombre}</strong> → <code>${r.phone}</code>
-              ${r.error ? `<span style="color:#dc3545; font-size:11px;"> ${r.error}</span>` : ''}
+            `<div class="log-row">
+              <span class="status-badge ${r.ok ? 'status-paid' : 'status-unpaid'}">${r.ok ? 'Enviado' : 'Falló'}</span>
+              <strong>${r.nombre}</strong> <code>${r.phone}</code>
+              ${r.error ? `<span class="log-err">${r.error}</span>` : ''}
             </div>`
           ).join('');
           logEl.style.display = 'block';
@@ -561,7 +835,20 @@
       }
     }
 
+    // En el teléfono el alta arranca plegada
+    function toggleAddForm(btn) {
+      btn.closest('.add').classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+      document.getElementById('nombre').focus();
+    }
+
     let allHistory = [];
+
+    // Tabs: delegan en toggleHistoryView (mismo comportamiento de siempre)
+    function showView(view) {
+      const showingHistory = document.getElementById('historyView').style.display !== 'none';
+      if ((view === 'history') !== showingHistory) toggleHistoryView();
+    }
 
     function toggleHistoryView() {
       const clientsView = document.getElementById('clientsView');
@@ -569,6 +856,8 @@
       const showingHistory = historyView.style.display === 'none';
       clientsView.style.display = showingHistory ? 'none' : 'block';
       historyView.style.display = showingHistory ? 'block' : 'none';
+      document.getElementById('tabClients').setAttribute('aria-selected', String(!showingHistory));
+      document.getElementById('tabHistory').setAttribute('aria-selected', String(showingHistory));
       if (showingHistory) loadHistory();
     }
 
@@ -609,7 +898,7 @@
         .sort((a, b) => b.noPagados.length - a.noPagados.length || a.nombre.localeCompare(b.nombre));
 
       if (rows.length === 0) {
-        container.innerHTML = '<div class="empty-state">Sin datos de histórico todavía.</div>';
+        container.innerHTML = '<div class="empty-state">Sin datos de histórico todavía. Se arma solo el día 1 de cada mes.</div>';
         return;
       }
 
@@ -620,7 +909,7 @@
           <thead>
             <tr>
               <th>Nombre</th>
-              <th>Meses no pagados (de últimos ${periodos.length})</th>
+              <th class="right">Meses sin pagar (de los últimos ${periodos.length})</th>
               <th>Detalle</th>
             </tr>
           </thead>
@@ -628,15 +917,16 @@
       `;
 
       rows.forEach(r => {
-        const detalle = r.noPagados.length > 0
-          ? `<details><summary>Ver</summary>${r.noPagados.map(h => `${mesNombre(h.mes)} ${h.anio}`).join(', ')}</details>`
-          : '—';
+        const n = r.noPagados.length;
+        const detalle = n > 0
+          ? `<details><summary>Ver meses</summary><span class="months-list">${r.noPagados.map(h => `${mesNombre(h.mes)} ${h.anio}`).join(', ')}</span></details>`
+          : '<span class="status-badge status-paid">Siempre al día</span>';
 
         html += `
-          <tr>
-            <td>${r.nombre}</td>
-            <td>${r.noPagados.length}</td>
-            <td>${detalle}</td>
+          <tr class="h-row">
+            <td class="h-name client-name">${r.nombre}</td>
+            <td class="h-count right"><span class="status-badge ${n === 0 ? 'status-neutral' : 'status-unpaid'}">${n}</span></td>
+            <td class="h-detail">${detalle}</td>
           </tr>
         `;
       });
