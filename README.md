@@ -4,8 +4,8 @@ Sistema de gestión de clientes para gimnasios con recordatorios automáticos po
 
 ## Stack
 
-- **Frontend**: HTML/CSS/JS estático — Vercel
-- **Backend**: Node.js + Express — Vercel (serverless)
+- **Frontend**: HTML/CSS/JS estático — GitHub Pages (branch `main`, carpeta `/docs`) → https://camilosilva27.github.io/appGym/ . Mergear a `main` = deploy automático del front.
+- **Backend**: Node.js + Express — Vercel (serverless) → https://app-gym-xi.vercel.app/api (la raíz da 404 a propósito: solo sirve /api)
 - **Base de datos**: Supabase (PostgreSQL)
 - **WhatsApp**: Meta WhatsApp Cloud API
 - **Autenticación**: JWT + bcrypt
