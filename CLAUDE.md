@@ -87,3 +87,6 @@ Argentina: el backend convierte cualquier formato a `54XXXXXXXXXX` (sin `+`) ant
 - Estructura: barra superior (marca + `#gymNombre` + Salir) → título "Cuotas de <mes>" con la frase de hallazgo (`#monthFinding`) → panel resumen (pagaron X de N + tira del mes con día 8 / día 10 / hoy + botones de envío y `#sendLog`) → alta de cliente (plegada en teléfono, `toggleAddForm`) → tabs Clientes / Histórico (`showView` delega en `toggleHistoryView`).
 - `renderSummary()` y `renderMonthStrip()` sólo leen `allClients` / la fecha local; no hay endpoints nuevos. `loadClients()` ahora llama a `filterClients()` (respeta la búsqueda activa) en vez de `renderClients(allClients)`.
 - Teléfono (≤640px): las tablas se vuelven filas de dos líneas por CSS grid (clases `c-name`, `c-phone`, `c-status`, `c-pay`, `actions-cell`; histórico `h-*`). Se conservan los ids que usa el JS (`row-<id>`, `nombre-<id>`, `telefono-<id>`, `.actions-cell`).
+
+## Modo demo
+`?demo` en la URL (https://camilosilva27.github.io/appGym/?demo) carga `docs/demo-mock.js` antes del script principal: reemplaza `fetch` por un backend simulado en memoria (12 clientes de ejemplo, histórico de 5 meses, envíos simulados), persistido en localStorage del navegador (`appgym-demo-v1`; `resetDemo()` en consola lo reinicia). Nunca toca el backend real. Si se agrega un endpoint nuevo, sumarlo también al mock.

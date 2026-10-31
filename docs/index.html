@@ -488,6 +488,10 @@
   </div><!-- /appScreen -->
 
   <script>
+    // ?demo en la URL = datos de ejemplo, sin backend (ver demo-mock.js)
+    if (new URLSearchParams(location.search).has('demo')) document.write('<script src="demo-mock.js"><\/script>');
+  </script>
+  <script>
     const API_URL = 'https://app-gym-xi.vercel.app/api';
 
     let allClients = [];
