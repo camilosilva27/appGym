@@ -56,4 +56,7 @@
     return res({ error: 'Ruta no simulada' }, 404);
   };
   window.resetDemo = () => { localStorage.removeItem(KEY); location.reload(); };
+  // En la demo no hay login: el botón Salir pasa a reiniciar los datos de ejemplo.
+  const salir = document.getElementById('logoutBtn');
+  if (salir) { salir.textContent = 'Reiniciar demo'; salir.onclick = () => window.resetDemo(); }
 })();

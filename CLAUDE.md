@@ -90,3 +90,7 @@ Argentina: el backend convierte cualquier formato a `54XXXXXXXXXX` (sin `+`) ant
 
 ## Modo demo
 `?demo` en la URL (https://camilosilva27.github.io/appGym/?demo) carga `docs/demo-mock.js` antes del script principal: reemplaza `fetch` por un backend simulado en memoria (12 clientes de ejemplo, histórico de 5 meses, envíos simulados), persistido en localStorage del navegador (`appgym-demo-v1`; `resetDemo()` en consola lo reinicia). Nunca toca el backend real. Si se agrega un endpoint nuevo, sumarlo también al mock.
+
+En demo no hay login: el mock guarda un token falso y el botón `#logoutBtn` ("Salir") pasa a "Reiniciar demo" (`resetDemo()`).
+
+**Demo instalable y offline (PWA):** sólo con `?demo`, el `<head>` agrega `manifest-demo.webmanifest` (start_url `./?demo`, así el ícono instalado abre siempre la demo) y se registra `docs/sw.js`. La app real (sin `?demo`) no se ofrece para instalar. El service worker precachea `index.html`, `demo-mock.js`, el manifest, los íconos (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`) y la tipografía DM Sans (CSS + archivos de gstatic, deduplicados: Google repite el mismo archivo en varios pesos y `cache.addAll` rechaza duplicados). Archivos propios: red primero con 3 s de espera y caída a la copia; las llamadas al backend (otro dominio) no se interceptan. Una vez registrado, el SW controla también `/appGym/` sin `?demo` en ese navegador; es inocuo porque es red primero. **Al cambiar cualquier archivo precacheado, subir `VERSION` en `sw.js`** para que los dispositivos instalados bajen lo nuevo.

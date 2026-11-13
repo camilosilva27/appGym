@@ -1,0 +1,16 @@
+{
+  "name": "AppGym · Demo",
+  "short_name": "AppGym demo",
+  "description": "Demo de gestión de clientes y cuotas para gimnasios, con datos de ejemplo.",
+  "id": "./?demo",
+  "start_url": "./?demo",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbf7f8",
+  "theme_color": "#fbf7f8",
+  "lang": "es-AR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
